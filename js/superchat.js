@@ -145,9 +145,13 @@ window.SuperChat = (() => {
                     const reader = new FileReader();
                     // We don't strictly need FileReader if we pass the File object directly to R2.
                     try {
-                        const originalText = superchatBtn.innerHTML;
-                        superchatBtn.innerHTML = 'Uploading...';
-                        superchatBtn.disabled = true;
+                        const superchatBtn = Array.from(document.querySelectorAll('#superchat-overlay button')).find(b => b.innerText.includes('Pay') || b.innerHTML.includes('Uploading'));
+                        let originalText = 'Pay';
+                        if (superchatBtn) {
+                            originalText = superchatBtn.innerHTML;
+                            superchatBtn.innerHTML = 'Uploading...';
+                            superchatBtn.disabled = true;
+                        }
                         
                         window.uploadToR2(file, file.name).then(r2Url => {
                             const evtObj = {
@@ -160,16 +164,23 @@ window.SuperChat = (() => {
                             };
                             socket.emit('addon-event', evtObj);
                             
-                            superchatBtn.innerHTML = originalText;
-                            superchatBtn.disabled = false;
-                            superchatModal.style.display = 'none';
-                            superchatInput.value = '';
-                            superchatAmount.value = '';
-                            mediaInput.value = '';
+                            if (superchatBtn) {
+                                superchatBtn.innerHTML = originalText;
+                                superchatBtn.disabled = false;
+                            }
+                            
+                            // Reset everything
+                            document.getElementById('sc-message').innerHTML = '';
+                            document.getElementById('sc-amount').value = '';
+                            SuperChat.removeMedia();
+                            SuperChat.closePopup();
+                            
                         }).catch(err => {
                             alert("R2 Upload failed: " + err);
-                            superchatBtn.innerHTML = originalText;
-                            superchatBtn.disabled = false;
+                            if (superchatBtn) {
+                                superchatBtn.innerHTML = originalText;
+                                superchatBtn.disabled = false;
+                            }
                         });
                     } catch (err) {
                         alert("Upload error: " + err);
