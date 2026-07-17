@@ -338,7 +338,7 @@ window.SuperChat = (() => {
             if (data.mediaUrl) {
                 const img = document.createElement('img');
                 if (data.mediaUrl.startsWith('r2://')) {
-                    img.src = "assets/loading.gif";
+                    img.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
                     img.setAttribute("data-r2", data.mediaUrl);
                     img.onload = function() { window.resolveR2Image(this); };
                 } else {

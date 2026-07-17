@@ -24,7 +24,7 @@ window.ChatHandler = (() => {
         let imgHtml = '';
         if (msgIcon) {
             if (msgIcon.startsWith('r2://')) {
-                imgHtml = `<img src="assets/loading.gif" data-r2="${msgIcon}" onload="window.resolveR2Image(this)" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`;
+                imgHtml = `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" data-r2="${msgIcon}" onload="window.resolveR2Image(this)" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`;
             } else {
                 let actualSrc = msgIcon.startsWith('/') ? localStorage.getItem('samsuServerUrl') + msgIcon : msgIcon;
                 imgHtml = `<img src="${actualSrc}" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`;
@@ -206,7 +206,7 @@ window.ChatHandler = (() => {
 
         if (msg.type === 'chat') {
             let contentHtml = msg.mediaUrl 
-                ? (msg.mediaUrl.startsWith('r2://') ? `<img src="assets/loading.gif" data-r2="${msg.mediaUrl}" onload="window.resolveR2Image(this)" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">` : `<img src="${window.getR2Url(msg.mediaUrl)}" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">`)
+                ? (msg.mediaUrl.startsWith('r2://') ? `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" data-r2="${msg.mediaUrl}" onload="window.resolveR2Image(this)" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">` : `<img src="${window.getR2Url(msg.mediaUrl)}" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">`)
                 : `<div class="sidebar-text">${msg.text}</div>`;
             el.innerHTML = `
                 ${getAvatarMarkup(msg.user, 'sidebar-avatar')}
@@ -217,7 +217,7 @@ window.ChatHandler = (() => {
             `;
         } else if (msg.type === 'reaction') {
             let contentHtml = msg.mediaUrl 
-                ? (msg.mediaUrl.startsWith('r2://') ? `<img src="assets/loading.gif" data-r2="${msg.mediaUrl}" onload="window.resolveR2Image(this)" style="max-width: 100%; max-height: 100px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">` : `<img src="${window.getR2Url(msg.mediaUrl)}" style="max-width: 100%; max-height: 100px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">`)
+                ? (msg.mediaUrl.startsWith('r2://') ? `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" data-r2="${msg.mediaUrl}" onload="window.resolveR2Image(this)" style="max-width: 100%; max-height: 100px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">` : `<img src="${window.getR2Url(msg.mediaUrl)}" style="max-width: 100%; max-height: 100px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">`)
                 : `<div class="sidebar-emoji">${msg.emoji} ${msg.count > 1 ? `<span class="stack-badge">x${msg.count}</span>` : ''}</div>`;
             el.innerHTML = `
                 ${getAvatarMarkup(msg.user, 'sidebar-avatar')}
@@ -300,7 +300,7 @@ window.ChatHandler = (() => {
             
                     if (msg.type === 'chat') {
                         let contentHtml = msg.mediaUrl 
-                            ? (msg.mediaUrl.startsWith('r2://') ? `<img src="assets/loading.gif" data-r2="${msg.mediaUrl}" onload="window.resolveR2Image(this)" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">` : `<img src="${window.getR2Url(msg.mediaUrl)}" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">`)
+                            ? (msg.mediaUrl.startsWith('r2://') ? `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" data-r2="${msg.mediaUrl}" onload="window.resolveR2Image(this)" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">` : `<img src="${window.getR2Url(msg.mediaUrl)}" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">`)
                             : `<div class="sidebar-text">${msg.text}</div>`;
                         el.innerHTML = `
                             ${getAvatarMarkup(msg.user, 'sidebar-avatar')}
@@ -488,11 +488,11 @@ window.ChatHandler = (() => {
             
             if (type === 'chat') {
                 el.className = 'phys-float float-item';
-                let inner = data.mediaUrl ? (data.mediaUrl.startsWith('r2://') ? `<img src="assets/loading.gif" data-r2="${data.mediaUrl}" onload="window.resolveR2Image(this)" style="height: 150px; border-radius: 8px; margin-left: 8px; object-fit: contain;">` : `<img src="${window.getR2Url(data.mediaUrl)}" style="height: 150px; border-radius: 8px; margin-left: 8px; object-fit: contain;">`) : `<span class="chat-text"><b>${data.user}:</b> ${data.text}</span>`;
+                let inner = data.mediaUrl ? (data.mediaUrl.startsWith('r2://') ? `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" data-r2="${data.mediaUrl}" onload="window.resolveR2Image(this)" style="height: 150px; border-radius: 8px; margin-left: 8px; object-fit: contain;">` : `<img src="${window.getR2Url(data.mediaUrl)}" style="height: 150px; border-radius: 8px; margin-left: 8px; object-fit: contain;">`) : `<span class="chat-text"><b>${data.user}:</b> ${data.text}</span>`;
                 el.innerHTML = `${getAvatarMarkup(data.user, 'float-avatar', data.icon)}${inner}`;
             } else {
                 el.className = 'phys-float float-reaction';
-                let inner = data.mediaUrl ? (data.mediaUrl.startsWith('r2://') ? `<img src="assets/loading.gif" data-r2="${data.mediaUrl}" onload="window.resolveR2Image(this)" style="height: 150px; border-radius: 8px; object-fit: contain;">` : `<img src="${window.getR2Url(data.mediaUrl)}" style="height: 150px; border-radius: 8px; object-fit: contain;">`) : `<span class="reaction-emoji">${data.emoji}</span>`;
+                let inner = data.mediaUrl ? (data.mediaUrl.startsWith('r2://') ? `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" data-r2="${data.mediaUrl}" onload="window.resolveR2Image(this)" style="height: 150px; border-radius: 8px; object-fit: contain;">` : `<img src="${window.getR2Url(data.mediaUrl)}" style="height: 150px; border-radius: 8px; object-fit: contain;">`) : `<span class="reaction-emoji">${data.emoji}</span>`;
                 el.innerHTML = `${getAvatarMarkup(data.user, 'float-avatar', data.icon)}${inner}`;
             }
             

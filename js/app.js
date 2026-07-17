@@ -177,7 +177,7 @@
             const getAvatarHTML = (iconUrl, name, size = 40) => {
                 if (iconUrl) {
                     if (iconUrl.startsWith('r2://')) {
-                        return `<img src="assets/loading.gif" data-r2="${iconUrl}" onload="window.resolveR2Image(this)" style="width: ${size}px; height: ${size}px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); flex-shrink: 0;">`;
+                        return `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" data-r2="${iconUrl}" onload="window.resolveR2Image(this)" style="width: ${size}px; height: ${size}px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); flex-shrink: 0;">`;
                     }
                     const finalUrl = iconUrl.startsWith('/') ? SERVER_URL + iconUrl : iconUrl;
                     return `<img src="${finalUrl}" style="width: ${size}px; height: ${size}px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); flex-shrink: 0;">`;
