@@ -46,12 +46,16 @@
 
             const r2BlobCache = {};
             window.getR2BlobUrlAsync = async (key) => {
-                if(!window.r2Ready || !key.startsWith('r2://')) return key;
+                if(!key.startsWith('r2://')) return key;
+                
+                if(!window.r2Ready) {
+                    return 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; 
+                }
+                
                 const actualKey = key.replace('r2://', '');
                 if (r2BlobCache[actualKey]) return r2BlobCache[actualKey];
                 
                 try {
-                    // Fetch using headers (bypasses WAF dropping massive query strings)
                     const data = await window.s3.getObject({ Bucket: window.R2Bucket, Key: actualKey }).promise();
                     const blob = new Blob([data.Body], { type: data.ContentType || 'image/gif' });
                     const url = URL.createObjectURL(blob);
@@ -59,12 +63,16 @@
                     return url;
                 } catch (e) {
                     console.error("Failed to load R2 Blob", e);
-                    // Fallback to presigned URL if getting object directly fails for some reason
                     return window.s3.getSignedUrl('getObject', { Bucket: window.R2Bucket, Key: actualKey, Expires: 60 * 60 });
                 }
             };
 
             window.resolveR2Image = (img) => {
+                if (!window.r2Ready) {
+                    setTimeout(() => window.resolveR2Image(img), 100);
+                    return;
+                }
+
                 const key = img.getAttribute('data-r2');
                 if (!key || img.dataset.resolved) return;
                 img.dataset.resolved = "true";
@@ -74,8 +82,10 @@
             };
             
             window.getR2Url = (key) => {
-                // Legacy fallback for things that can't use the async loader easily
-                if(!window.r2Ready || !key.startsWith('r2://')) return key;
+                if(!key.startsWith('r2://')) return key;
+                
+                if(!window.r2Ready) return 'default_avatar.png'; 
+                
                 const actualKey = key.replace('r2://', '');
                 return window.s3.getSignedUrl('getObject', { Bucket: window.R2Bucket, Key: actualKey, Expires: 60 * 60 });
             };
