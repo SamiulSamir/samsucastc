@@ -77,7 +77,9 @@
                 if (!key || img.dataset.resolved) return;
                 img.dataset.resolved = "true";
                 window.getR2BlobUrlAsync(key).then(url => {
-                    img.src = url;
+                    setTimeout(() => {
+                        img.src = url;
+                    }, 10); // Escape the onload stack to prevent Cordova/WebKit aborting the load and triggering onerror
                 });
             };
             
