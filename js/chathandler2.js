@@ -238,8 +238,19 @@ window.ChatHandler = (() => {
             if (setupScreen && !setupScreen.classList.contains('hidden')) {
                 const notif = document.getElementById('home-chat-notification');
                 if (notif) {
-                    const safeName = msg.user.replace(/[^a-z0-9_-]/gi, '_').toLowerCase();
-                    document.getElementById('notif-avatar').src = localStorage.getItem('samsuServerUrl') + '/avatars/' + safeName + '.png';
+                    const notifAvatar = document.getElementById('notif-avatar');
+                    if (msg.icon && msg.icon.startsWith('r2://')) {
+                        notifAvatar.setAttribute("data-r2", msg.icon);
+                        notifAvatar.onload = function() { window.resolveR2Image(this); };
+                        notifAvatar.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+                    } else if (msg.icon && msg.icon.startsWith('/')) {
+                        notifAvatar.src = localStorage.getItem('samsuServerUrl') + msg.icon;
+                    } else if (msg.icon) {
+                        notifAvatar.src = msg.icon;
+                    } else {
+                        const safeName = msg.user.replace(/[^a-z0-9_-]/gi, '_').toLowerCase();
+                        notifAvatar.src = localStorage.getItem('samsuServerUrl') + '/avatars/' + safeName + '.png';
+                    }
                     document.getElementById('notif-name').innerText = msg.user;
                     document.getElementById('notif-msg').innerText = msg.type === 'chat' ? (msg.mediaUrl ? 'Sent media' : msg.text) : msg.emoji;
                     notif.classList.remove('hidden');

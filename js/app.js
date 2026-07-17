@@ -1257,10 +1257,19 @@
                         inputsContainer.classList.add('hidden');
                     }
                     
-                    if (state.userIcon) {
-                        ui.editAvatarPreview.src = state.userIcon.startsWith('/') ? SERVER_URL + state.userIcon : state.userIcon;
+                    const iconToUse = state.userIcon || userData.profileIcon;
+                    if (iconToUse) {
+                        if (iconToUse.startsWith('r2://')) {
+                            ui.editAvatarPreview.setAttribute("data-r2", iconToUse);
+                            ui.editAvatarPreview.onload = function() { window.resolveR2Image(this); };
+                            ui.editAvatarPreview.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+                        } else if (iconToUse.startsWith('/')) {
+                            ui.editAvatarPreview.src = SERVER_URL + iconToUse;
+                        } else {
+                            ui.editAvatarPreview.src = iconToUse;
+                        }
                     } else {
-                        ui.editAvatarPreview.src = userData.profileIcon ? SERVER_URL + userData.profileIcon : 'default_avatar.png';
+                        ui.editAvatarPreview.src = 'default_avatar.png';
                     }
                 },
                 closeProfileModal: () => {
