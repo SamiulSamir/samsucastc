@@ -1341,7 +1341,7 @@
                         if (data.success) {
                             state.userFullname = data.user.fullname;
                             if (data.user.profileIcon) {
-                                state.userIcon = null; // force reload from URL
+                                state.userIcon = data.user.profileIcon; 
                                 userData.profileIcon = data.user.profileIcon;
                             }
                             localStorage.setItem('samsuUser', JSON.stringify(data.user));

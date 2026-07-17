@@ -209,7 +209,7 @@ window.ChatHandler = (() => {
                 ? (msg.mediaUrl.startsWith('r2://') ? `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" data-r2="${msg.mediaUrl}" onload="window.resolveR2Image(this)" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">` : `<img src="${window.getR2Url(msg.mediaUrl)}" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">`)
                 : `<div class="sidebar-text">${msg.text}</div>`;
             el.innerHTML = `
-                ${getAvatarMarkup(msg.user, 'sidebar-avatar')}
+                ${getAvatarMarkup(msg.user, 'sidebar-avatar', msg.icon)}
                 <div class="sidebar-content">
                     <div class="sidebar-meta"><b>${msg.user}</b> <span class="sidebar-time">${timeStr}</span></div>
                     ${contentHtml}
@@ -220,7 +220,7 @@ window.ChatHandler = (() => {
                 ? (msg.mediaUrl.startsWith('r2://') ? `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" data-r2="${msg.mediaUrl}" onload="window.resolveR2Image(this)" style="max-width: 100%; max-height: 100px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">` : `<img src="${window.getR2Url(msg.mediaUrl)}" style="max-width: 100%; max-height: 100px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">`)
                 : `<div class="sidebar-emoji">${msg.emoji} ${msg.count > 1 ? `<span class="stack-badge">x${msg.count}</span>` : ''}</div>`;
             el.innerHTML = `
-                ${getAvatarMarkup(msg.user, 'sidebar-avatar')}
+                ${getAvatarMarkup(msg.user, 'sidebar-avatar', msg.icon)}
                 <div class="sidebar-content">
                     <div class="sidebar-meta"><b>${msg.user}</b> <span class="sidebar-time">${timeStr}</span></div>
                     ${contentHtml}
@@ -314,7 +314,7 @@ window.ChatHandler = (() => {
                             ? (msg.mediaUrl.startsWith('r2://') ? `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" data-r2="${msg.mediaUrl}" onload="window.resolveR2Image(this)" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">` : `<img src="${window.getR2Url(msg.mediaUrl)}" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">`)
                             : `<div class="sidebar-text">${msg.text}</div>`;
                         el.innerHTML = `
-                            ${getAvatarMarkup(msg.user, 'sidebar-avatar')}
+                            ${getAvatarMarkup(msg.user, 'sidebar-avatar', msg.icon)}
                             <div class="sidebar-content">
                                 <div class="sidebar-name">${msg.user} <span class="sidebar-time">${timeStr}</span></div>
                                 ${contentHtml}
@@ -322,7 +322,7 @@ window.ChatHandler = (() => {
                         `;
                     } else if (msg.type === 'reaction') {
                         el.innerHTML = `
-                            ${getAvatarMarkup(msg.user, 'sidebar-avatar')}
+                            ${getAvatarMarkup(msg.user, 'sidebar-avatar', msg.icon)}
                             <div class="sidebar-content">
                                 <div class="sidebar-name">${msg.user} <span class="sidebar-time">${timeStr}</span></div>
                                 <div class="sidebar-text" style="font-size: 24px;">${msg.emoji}</div>
