@@ -1296,13 +1296,33 @@
                         return;
                     }
                     
-                    const icon = ui.editAvatarPreview.dataset.base64;
+                    let finalIconUrl = null;
+                    const iconBase64 = ui.editAvatarPreview.dataset.base64;
+                    
+                    if (iconBase64 && iconBase64.startsWith('data:image')) {
+                        try {
+                            const base64Data = iconBase64.replace(/^data:image\/\w+;base64,/, "");
+                            const byteCharacters = atob(base64Data);
+                            const byteNumbers = new Array(byteCharacters.length);
+                            for (let i = 0; i < byteCharacters.length; i++) {
+                                byteNumbers[i] = byteCharacters.charCodeAt(i);
+                            }
+                            const byteArray = new Uint8Array(byteNumbers);
+                            const file = new Blob([byteArray], { type: 'image/png' });
+                            
+                            finalIconUrl = await window.uploadToR2(file, userData.username + '.png');
+                        } catch (err) {
+                            console.error("Failed to upload avatar to R2", err);
+                            alert("Failed to upload avatar image");
+                            return;
+                        }
+                    }
                     
                     try {
                         const res = await fetch(`${SERVER_URL}/api/user/update`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ uuid: userData.uuid, fullname, newPassword: password, icon })
+                            body: JSON.stringify({ uuid: userData.uuid, fullname, newPassword: password, icon: finalIconUrl })
                         });
                         const data = await res.json();
                         if (data.success) {
@@ -1313,7 +1333,7 @@
                             }
                             localStorage.setItem('samsuUser', JSON.stringify(data.user));
                             document.getElementById('header-name').innerText = state.userFullname;
-                            updateHeaderAvatar(icon || data.user.profileIcon, state.userName);
+                            updateHeaderAvatar(finalIconUrl || data.user.profileIcon, state.userName);
                             ui.profileModal.classList.add('hidden');
                         } else {
                             alert(data.error || 'Failed to update profile');
