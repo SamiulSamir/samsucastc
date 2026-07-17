@@ -122,8 +122,8 @@ window.CurrencyManager = (() => {
             socket.on('money_sync', (newBalance) => {
                 currentBalance = newBalance;
                 
-                if (window.getState) {
-                    const state = window.getState();
+                if (typeof getState === 'function') {
+                    const state = getState();
                     if (state) state.userMoney = newBalance;
                 }
                 

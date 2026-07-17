@@ -14,7 +14,7 @@
         const container = document.getElementById('admin-announcements');
         if (!container) return;
         
-        const isSelf = msg.targetName === window.getState().userName;
+        const isSelf = typeof CoreApp !== 'undefined' && CoreApp.getState && msg.targetName === CoreApp.getState().userName;
         const isGift = msg.amount >= 0;
         const actionText = isGift ? "gifted" : "fined";
         const symbol = isGift ? "🎁" : "🚨";
@@ -25,8 +25,8 @@
             : `${symbol} <b style="color:#ffd700;">${msg.targetName}</b> was ${actionText} $${amountStr} from Admin!`;
             
         const card = document.createElement('div');
-        card.style.background = isGift ? 'rgba(40, 167, 69, 0.8)' : 'rgba(220, 53, 69, 0.8)';
-        card.style.border = isGift ? '1px solid #28a745' : '1px solid #dc3545';
+        card.style.background = isGift ? 'rgba(10, 40, 15, 0.85)' : 'rgba(40, 10, 10, 0.85)';
+        card.style.border = isGift ? '1px solid rgba(40, 167, 69, 0.5)' : '1px solid rgba(220, 53, 69, 0.5)';
         card.style.backdropFilter = 'blur(6px)';
         card.style.borderRadius = '10px';
         card.style.padding = '12px 15px';

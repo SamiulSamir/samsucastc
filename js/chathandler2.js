@@ -245,13 +245,13 @@ window.ChatHandler = (() => {
             if (amountStr === '') amountStr = '0$ ';
 
             let contentHtml = msg.mediaUrl 
-                ? (msg.mediaUrl.startsWith('r2://') ? `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" data-r2="${msg.mediaUrl}" onload="window.resolveR2Image(this)" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 8px; display: block; object-fit: contain;">` : `<img src="${window.getR2Url(msg.mediaUrl)}" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 8px; display: block; object-fit: contain;">`)
-                : (msg.text ? `<div style="color: white; font-weight: 500; word-break: break-word; margin-top: 4px;">${msg.text}</div>` : '');
+                ? (msg.mediaUrl.startsWith('r2://') ? `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" data-r2="${msg.mediaUrl}" onload="window.resolveR2Image(this)" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 10px; display: block; object-fit: contain;">` : `<img src="${window.getR2Url(msg.mediaUrl)}" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 10px; display: block; object-fit: contain;">`)
+                : (msg.text ? `<div style="color: white; font-size: 16px; font-weight: 500; word-break: break-word; text-align: center;">${msg.text}</div>` : '');
 
             el.innerHTML = `
-                <div class="sidebar-content" style="width: 100%; padding: 10px; background: rgba(255, 215, 0, 0.15); border: 1px solid rgba(255, 215, 0, 0.4); border-radius: 8px; margin: 4px 0;">
-                    <div style="color: rgb(199, 199, 199); font-size: 13px; font-weight: bold; margin-bottom: 4px; text-align: center;">
-                        <b style="color:white;">${msg.user}</b> Donated <b style="color:rgb(255, 94, 94);">${amountStr}</b>
+                <div class="sidebar-content" style="width: 100%; padding: 12px 15px; background: rgb(0 0 0 / 61%); border: 1px solid #ffeb3b; backdrop-filter: blur(6px); border-radius: 10px; margin: 5px 0; box-shadow: 0 8px 25px rgba(0,0,0,0.5); overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <div style="color: rgb(199, 199, 199); font-size: 14px; font-weight: bold; margin-bottom: 8px; text-align: center;">
+                        <b style="color:white;">${msg.user}</b> Donated <b style="color:rgb(255, 94, 94);">${amountStr}</b>through super chat
                     </div>
                     ${contentHtml}
                 </div>
@@ -371,13 +371,13 @@ window.ChatHandler = (() => {
                         if (amountStr === '') amountStr = '0$ ';
 
                         let contentHtml = msg.mediaUrl 
-                            ? (msg.mediaUrl.startsWith('r2://') ? `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" data-r2="${msg.mediaUrl}" onload="window.resolveR2Image(this)" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 8px; display: block; object-fit: contain;">` : `<img src="${window.getR2Url(msg.mediaUrl)}" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 8px; display: block; object-fit: contain;">`)
-                            : (msg.text ? `<div style="color: white; font-weight: 500; word-break: break-word; margin-top: 4px;">${msg.text}</div>` : '');
+                            ? (msg.mediaUrl.startsWith('r2://') ? `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" data-r2="${msg.mediaUrl}" onload="window.resolveR2Image(this)" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 10px; display: block; object-fit: contain;">` : `<img src="${window.getR2Url(msg.mediaUrl)}" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 10px; display: block; object-fit: contain;">`)
+                            : (msg.text ? `<div style="color: white; font-size: 16px; font-weight: 500; word-break: break-word; text-align: center;">${msg.text}</div>` : '');
 
                         el.innerHTML = `
-                            <div class="sidebar-content" style="width: 100%; padding: 10px; background: rgba(255, 215, 0, 0.15); border: 1px solid rgba(255, 215, 0, 0.4); border-radius: 8px; margin: 4px 0;">
-                                <div style="color: rgb(199, 199, 199); font-size: 13px; font-weight: bold; margin-bottom: 4px; text-align: center;">
-                                    <b style="color:white;">${msg.user}</b> Donated <b style="color:rgb(255, 94, 94);">${amountStr}</b>
+                            <div class="sidebar-content" style="width: 100%; padding: 12px 15px; background: rgb(0 0 0 / 61%); border: 1px solid #ffeb3b; backdrop-filter: blur(6px); border-radius: 10px; margin: 5px 0; box-shadow: 0 8px 25px rgba(0,0,0,0.5); overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                <div style="color: rgb(199, 199, 199); font-size: 14px; font-weight: bold; margin-bottom: 8px; text-align: center;">
+                                    <b style="color:white;">${msg.user}</b> Donated <b style="color:rgb(255, 94, 94);">${amountStr}</b>through super chat
                                 </div>
                                 ${contentHtml}
                             </div>
