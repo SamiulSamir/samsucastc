@@ -421,7 +421,12 @@
             document.getElementById('register-section').classList.add('hidden');
             document.getElementById('error-msg').classList.add('hidden');
             
-            document.getElementById('spinner-avatar').src = `${API_URL}${userData.profileIcon}`;
+            const spinnerAvatar = document.getElementById('spinner-avatar');
+            if (userData.profileIcon && userData.profileIcon.startsWith('r2://')) {
+                spinnerAvatar.style.display = 'none'; // Cannot easily resolve R2 URLs here without AWS SDK, so hide it
+            } else if (userData.profileIcon) {
+                spinnerAvatar.src = `${API_URL}${userData.profileIcon}`;
+            }
             document.getElementById('spinner-name').innerText = `Welcome, ${userData.fullname}`;
             document.getElementById('spinner-overlay').classList.remove('hidden');
 
