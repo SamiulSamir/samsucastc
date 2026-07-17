@@ -1,6 +1,6 @@
 {
 
-    "img":"https://i.ibb.co.com/C560dXmx/Screenshot-2026-07-17-234354.png",
+    "img":"https://i.ibb.co.com/FbFmjy4F/Screenshot-2026-07-17-234354.png",
 
     "status" : "<div style='margin: 0; display: grid; min-height: 100vh; font-family: Arial, Helvetica, sans-serif; text-align: left; color: white; width: 100%;'>        <div style='max-width: 900px; padding: 30px; box-sizing: border-box;'>                <h1 id='animated-gradient-text' style='margin: 0 0 24px; line-height: 1.1; background: linear-gradient(90deg, #ffffff 0%, #ffffff 20%, #2b2b2b 35%, #000000 50%, #5f5f5f 65%, #ffffff 80%, #ffffff 100%); background-size: 300% 100%; background-position: 0% 50%; -webkit-background-clip: text; background-clip: text; color: transparent;'>            Paying tribute to Ahnaf's feet.        </h1>                <p style='font-size: 1.25rem; color: #ddd; line-height: 1.7; margin: 0;'>            They contributed absolutely nothing, but who said a tribute needs context?            Cool-looking feet are reason enough, aren't they?        </p>    </div></div><script>    (function() {        const targetText = document.getElementById('animated-gradient-text');                if (targetText && targetText.animate) {            targetText.animate([                { backgroundPosition: '0% 50%' },                { backgroundPosition: '300% 50%' }            ], {                duration: 4000,                iterations: Infinity,                easing: 'linear'            });        }    })();</script>"
 }
