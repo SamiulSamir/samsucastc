@@ -25,8 +25,8 @@
             : `${symbol} <b style="color:#ffd700;">${msg.targetName}</b> was ${actionText} $${amountStr} from Admin!`;
             
         const card = document.createElement('div');
-        card.style.background = isGift ? 'rgba(10, 40, 15, 0.85)' : 'rgba(40, 10, 10, 0.85)';
-        card.style.border = isGift ? '1px solid rgba(40, 167, 69, 0.5)' : '1px solid rgba(220, 53, 69, 0.5)';
+        card.style.background = isGift ? 'rgba(5, 20, 5, 0.75)' : 'rgba(20, 5, 5, 0.75)';
+        card.style.border = isGift ? '1px solid rgba(40, 167, 69, 0.3)' : '1px solid rgba(220, 53, 69, 0.3)';
         card.style.backdropFilter = 'blur(6px)';
         card.style.borderRadius = '10px';
         card.style.padding = '12px 15px';
