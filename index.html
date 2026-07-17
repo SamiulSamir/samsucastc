@@ -45,6 +45,8 @@
             background: #0f0f0f; 
             color: #e5e5e5; 
             margin: 0; 
+            padding: 0;
+            width: 100%;
             min-width: 375px;
             display: flex; 
             flex-direction: column; 
@@ -560,7 +562,7 @@
     <script>
         const _samsuServerUrl = localStorage.getItem('samsuServerUrl');
         if (!_samsuServerUrl) {
-            window.location.href = 'init.html';
+            window.location.href = 'init.html' + window.location.search;
         } else {
             document.write('<script src="' + _samsuServerUrl + '/socket.io/socket.io.js"><\\/script>');
         }
@@ -778,7 +780,7 @@
                 <p>Waiting for host to select a file...</p>
                 
                 <div id="viewer-movie-selection" class="hidden" style="margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-                    <div id="expected-file" style="color: #4ade80; font-size: 1.1rem; margin-bottom:15px; font-weight:bold; text-shadow: 0 2px 10px rgba(74,222,128,0.2);"></div>
+                    <div id="expected-file" style="color: #ffffff; font-size: 1.1rem; margin-bottom:15px; font-weight:bold; text-shadow: 0 2px 10px rgba(255,255,255,0.2);"></div>
                     <label for="video-file" style="cursor: pointer;">
                         <div style="padding: 12px 24px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); border-radius: 16px; display: inline-block; transition: background 0.2s; color: white; font-weight: bold; box-shadow: 0 4px 15px rgba(255,255,255,0.1);">
                             Choose the video file
@@ -969,8 +971,8 @@
                 <div id="sys-chatbox"></div>
             </div>
 
-            <div id="dynamic-post-section" class="module-container" style="text-align: center; padding: 20px;">
-                <img id="post-img" src="" style="width: 90%; height: auto; border-radius: 12px; display: none; margin: 0 auto 15px auto;">
+            <div id="dynamic-post-section" class="module-container" style="    transform: scale(0.9);padding: 0;">
+                <img id="post-img" src="" style="width: 100%; height: auto; border-radius: 12px; display: none; ;">
                 <div id="post-status" style="font-size: 15px; color: #fff; text-align: left;"></div>
             </div>
         </div>
