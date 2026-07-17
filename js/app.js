@@ -139,6 +139,7 @@
                 isHost: false,
                 userName: userData.fullname,
                 userUUID: userData.uuid + '_' + Math.random().toString(36).substring(2, 9),
+                accountUUID: userData.uuid,
                 userIcon: userData.profileIcon,
                 hostVideoInfo: null,
                 pendingVideoUrl: null,
@@ -575,6 +576,23 @@
 
             socket.on('server-ping', () => socket.emit('server-pong'));
             socket.on('system-message', (msg) => {
+                if (typeof msg === 'object') {
+                    if (msg.type === 'gift') {
+                        // System message in chat
+                        logMsg(`🎁 <b style="color:#ffd700;">${msg.targetName}</b> was gifted $${msg.amount.toFixed(2)} from Admin! ${msg.htmlMessage || ''}`);
+                        
+                        // Superchat UI bounce popup at the bottom left of the video
+                        if (window.SuperChat) {
+                            window.SuperChat.render({
+                                user: 'Admin 🎁 ' + msg.targetName,
+                                amount: msg.amount,
+                                text: msg.htmlMessage ? msg.htmlMessage.replace(/<[^>]*>?/gm, '') : 'Admin Gift'
+                            });
+                        }
+                    }
+                    return;
+                }
+
                 if (msg.includes('started playing') || msg.includes('paused at') || msg.includes('seeked to')) return;
                 logMsg(msg); 
             });

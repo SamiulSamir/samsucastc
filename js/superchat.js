@@ -337,7 +337,13 @@ window.SuperChat = (() => {
             
             if (data.mediaUrl) {
                 const img = document.createElement('img');
-                img.src = data.mediaUrl.startsWith('r2://') ? window.getR2Url(data.mediaUrl) : (localStorage.getItem('samsuServerUrl') + data.mediaUrl);
+                if (data.mediaUrl.startsWith('r2://')) {
+                    img.src = "assets/loading.gif";
+                    img.setAttribute("data-r2", data.mediaUrl);
+                    img.onload = function() { window.resolveR2Image(this); };
+                } else {
+                    img.src = localStorage.getItem('samsuServerUrl') + data.mediaUrl;
+                }
                 img.style.maxWidth = '100%';
                 img.style.maxHeight = '150px';
                 img.style.borderRadius = '8px';

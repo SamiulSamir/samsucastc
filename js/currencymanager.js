@@ -117,7 +117,7 @@ window.CurrencyManager = (() => {
             getState = cfg.getState;
 
             // Fetch initial balance on load
-            socket.emit('get_money', getState().userUUID);
+            socket.emit('get_money', getState().accountUUID);
 
             socket.on('money_sync', (newBalance) => {
                 currentBalance = newBalance;
@@ -139,7 +139,7 @@ window.CurrencyManager = (() => {
                 const video = document.getElementById('main-video');
                 // Ensure video exists, is playing, and isn't buffering endlessly
                 if (video && !video.paused && video.readyState >= 2) {
-                    socket.emit('idle_earn', getState().userUUID);
+                    socket.emit('idle_earn', getState().accountUUID);
                 }
             }, 10000);
         },
@@ -148,7 +148,7 @@ window.CurrencyManager = (() => {
 
         reduceMoney: (amount) => {
             if (currentBalance >= amount) {
-                socket.emit('reduce_money', { uuid: getState().userUUID, amount: amount });
+                socket.emit('reduce_money', { uuid: getState().accountUUID, amount: amount });
                 return true;
             }
             return false;

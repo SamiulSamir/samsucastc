@@ -9,10 +9,8 @@ window.ChatHandler = (() => {
     let lastPhysicsTime = 0;
     let isDockOpen = false;
 
-    function getAvatarMarkup(userName, customClass = "sidebar-avatar") {
+    function getAvatarMarkup(userName, customClass = "sidebar-avatar", msgIcon = null) {
         if(!userName) return '';
-        const safeName = userName.replace(/[^a-z0-9_-]/gi, '_').toLowerCase();
-        const avatarUrl = localStorage.getItem('samsuServerUrl') + '/avatars/' + safeName + '.png';
         const firstLetter = userName.charAt(0).toUpperCase();
 
         let hash = 0;
@@ -23,10 +21,20 @@ window.ChatHandler = (() => {
         const size = customClass === 'float-avatar' ? '28px' : '32px';
         const fontSize = customClass === 'float-avatar' ? '12px' : '14px';
 
+        let imgHtml = '';
+        if (msgIcon) {
+            if (msgIcon.startsWith('r2://')) {
+                imgHtml = `<img src="assets/loading.gif" data-r2="${msgIcon}" onload="window.resolveR2Image(this)" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`;
+            } else {
+                let actualSrc = msgIcon.startsWith('/') ? localStorage.getItem('samsuServerUrl') + msgIcon : msgIcon;
+                imgHtml = `<img src="${actualSrc}" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`;
+            }
+        }
+
         return `
             <div class="${customClass}-wrapper" style="position:relative; display:inline-block; width:${size}; height:${size}; flex-shrink:0; border-radius:50%; overflow:hidden; vertical-align:middle;">
-                <img class="${customClass}" src="${avatarUrl}" style="width:100%; height:100%; border-radius:50%; object-fit:cover; display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <div class="avatar-fallback" style="display:none; width:100%; height:100%; background:${color}; color:white; align-items:center; justify-content:center; font-weight:bold; font-size:${fontSize}; text-transform:uppercase; line-height:1; font-family:sans-serif;">${firstLetter}</div>
+                ${imgHtml}
+                <div style="display:${msgIcon ? 'none' : 'flex'}; width:100%; height:100%; background:${color}; color:white; align-items:center; justify-content:center; font-weight:bold; font-size:${fontSize}; line-height:1; font-family:sans-serif;">${firstLetter}</div>
             </div>
         `;
     }
@@ -198,7 +206,7 @@ window.ChatHandler = (() => {
 
         if (msg.type === 'chat') {
             let contentHtml = msg.mediaUrl 
-                ? `<img src="${window.getR2Url(msg.mediaUrl)}" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">` 
+                ? (msg.mediaUrl.startsWith('r2://') ? `<img src="assets/loading.gif" data-r2="${msg.mediaUrl}" onload="window.resolveR2Image(this)" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">` : `<img src="${window.getR2Url(msg.mediaUrl)}" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">`)
                 : `<div class="sidebar-text">${msg.text}</div>`;
             el.innerHTML = `
                 ${getAvatarMarkup(msg.user, 'sidebar-avatar')}
@@ -209,7 +217,7 @@ window.ChatHandler = (() => {
             `;
         } else if (msg.type === 'reaction') {
             let contentHtml = msg.mediaUrl 
-                ? `<img src="${window.getR2Url(msg.mediaUrl)}" style="max-width: 100%; max-height: 100px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">` 
+                ? (msg.mediaUrl.startsWith('r2://') ? `<img src="assets/loading.gif" data-r2="${msg.mediaUrl}" onload="window.resolveR2Image(this)" style="max-width: 100%; max-height: 100px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">` : `<img src="${window.getR2Url(msg.mediaUrl)}" style="max-width: 100%; max-height: 100px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">`)
                 : `<div class="sidebar-emoji">${msg.emoji} ${msg.count > 1 ? `<span class="stack-badge">x${msg.count}</span>` : ''}</div>`;
             el.innerHTML = `
                 ${getAvatarMarkup(msg.user, 'sidebar-avatar')}
@@ -292,7 +300,7 @@ window.ChatHandler = (() => {
             
                     if (msg.type === 'chat') {
                         let contentHtml = msg.mediaUrl 
-                            ? `<img src="${window.getR2Url(msg.mediaUrl)}" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">` 
+                            ? (msg.mediaUrl.startsWith('r2://') ? `<img src="assets/loading.gif" data-r2="${msg.mediaUrl}" onload="window.resolveR2Image(this)" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">` : `<img src="${window.getR2Url(msg.mediaUrl)}" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 4px; display: block; object-fit: contain;">`)
                             : `<div class="sidebar-text">${msg.text}</div>`;
                         el.innerHTML = `
                             ${getAvatarMarkup(msg.user, 'sidebar-avatar')}
@@ -356,7 +364,7 @@ window.ChatHandler = (() => {
             const state = getState();
             
             window.uploadToR2(file, file.name).then(r2Url => {
-                const evtObj = { type: type, user: state.userName, uuid: state.userUUID, timestamp: Date.now(), mediaUrl: r2Url };
+                const evtObj = { type: type, user: state.userName, icon: state.userIcon, uuid: state.userUUID, timestamp: Date.now(), mediaUrl: r2Url };
                 socket.emit('addon-event', evtObj);
             }).catch(err => {
                 alert("Upload failed: " + err);
@@ -436,7 +444,7 @@ window.ChatHandler = (() => {
             if (!text) return;
             const state = getState();
             
-            const evt = { type: 'chat_msg', text: text, user: state.userName, uuid: state.userUUID, timestamp: Date.now() };
+            const evt = { type: 'chat_msg', text: text, user: state.userName, icon: state.userIcon, uuid: state.userUUID, timestamp: Date.now() };
             socket.emit('addon-event', evt);
             
             ui.chatInput.innerText = '';
@@ -449,7 +457,7 @@ window.ChatHandler = (() => {
             if (!text) return;
             const state = getState();
             
-            const evt = { type: 'chat_msg', text: text, user: state.userName, uuid: state.userUUID, timestamp: Date.now() };
+            const evt = { type: 'chat_msg', text: text, user: state.userName, icon: state.userIcon, uuid: state.userUUID, timestamp: Date.now() };
             socket.emit('addon-event', evt);
             
             ui.sidebarChatInput.innerText = '';
@@ -457,7 +465,7 @@ window.ChatHandler = (() => {
 
         sendReaction: (emoji) => {
             const state = getState();
-            const evt = { type: 'reaction', emoji: emoji, user: state.userName, uuid: state.userUUID, timestamp: Date.now() };
+            const evt = { type: 'reaction', emoji: emoji, user: state.userName, icon: state.userIcon, uuid: state.userUUID, timestamp: Date.now() };
             socket.emit('addon-event', evt);
             
             // Removed local optimstic render. We wait for network bounce-back.
@@ -480,12 +488,12 @@ window.ChatHandler = (() => {
             
             if (type === 'chat') {
                 el.className = 'phys-float float-item';
-                let inner = data.mediaUrl ? `<img src="${window.getR2Url(data.mediaUrl)}" style="height: 150px; border-radius: 8px; margin-left: 8px; object-fit: contain;">` : `<span class="chat-text"><b>${data.user}:</b> ${data.text}</span>`;
-                el.innerHTML = `${getAvatarMarkup(data.user, 'float-avatar')}${inner}`;
+                let inner = data.mediaUrl ? (data.mediaUrl.startsWith('r2://') ? `<img src="assets/loading.gif" data-r2="${data.mediaUrl}" onload="window.resolveR2Image(this)" style="height: 150px; border-radius: 8px; margin-left: 8px; object-fit: contain;">` : `<img src="${window.getR2Url(data.mediaUrl)}" style="height: 150px; border-radius: 8px; margin-left: 8px; object-fit: contain;">`) : `<span class="chat-text"><b>${data.user}:</b> ${data.text}</span>`;
+                el.innerHTML = `${getAvatarMarkup(data.user, 'float-avatar', data.icon)}${inner}`;
             } else {
                 el.className = 'phys-float float-reaction';
-                let inner = data.mediaUrl ? `<img src="${window.getR2Url(data.mediaUrl)}" style="height: 150px; border-radius: 8px; object-fit: contain;">` : `<span class="reaction-emoji">${data.emoji}</span>`;
-                el.innerHTML = `${getAvatarMarkup(data.user, 'float-avatar')}${inner}`;
+                let inner = data.mediaUrl ? (data.mediaUrl.startsWith('r2://') ? `<img src="assets/loading.gif" data-r2="${data.mediaUrl}" onload="window.resolveR2Image(this)" style="height: 150px; border-radius: 8px; object-fit: contain;">` : `<img src="${window.getR2Url(data.mediaUrl)}" style="height: 150px; border-radius: 8px; object-fit: contain;">`) : `<span class="reaction-emoji">${data.emoji}</span>`;
+                el.innerHTML = `${getAvatarMarkup(data.user, 'float-avatar', data.icon)}${inner}`;
             }
             
             el.style.transformOrigin = 'top left'; 
