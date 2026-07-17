@@ -11,20 +11,12 @@
             const socket = io(SERVER_URL, { transports: ['websocket'] });
             
             window.r2Ready = false;
+            let cloudflareEndpoint = "";
             fetch(SERVER_URL + '/api/r2-creds')
                 .then(res => res.json())
                 .then(creds => {
                     window.R2Bucket = creds.bucketName;
-                    AWS.config.update({
-                        accessKeyId: creds.accessKeyId,
-                        secretAccessKey: creds.secretAccessKey,
-                        region: 'auto',
-                        signatureVersion: 'v4'
-                    });
-                    window.s3 = new AWS.S3({ 
-                        endpoint: creds.endpoint,
-                        s3ForcePathStyle: true
-                    });
+                    cloudflareEndpoint = creds.endpoint;
                     window.r2Ready = true;
                 }).catch(err => console.error("Failed to load R2 credentials", err));
 
@@ -33,21 +25,31 @@
                 const ext = fileName.split('.').pop();
                 const uniqueName = Date.now() + '-' + Math.random().toString(36).substring(2, 9) + '.' + ext;
                 
-                const params = {
-                    Bucket: window.R2Bucket,
-                    Key: uniqueName,
-                    Body: file,
-                    ContentType: file.type || 'image/png'
-                };
+                const contentType = file.type || 'image/png';
                 
-                await window.s3.putObject(params).promise();
+                // Get presigned upload URL from server
+                const res = await fetch(`${SERVER_URL}/api/presign-upload?filename=${encodeURIComponent(uniqueName)}&contentType=${encodeURIComponent(contentType)}`);
+                const { url, key } = await res.json();
+                
+                // Upload directly to R2 using the presigned URL
+                await fetch(url, {
+                    method: 'PUT',
+                    body: file,
+                    headers: {
+                        'Content-Type': contentType
+                    }
+                });
+                
                 return 'r2://' + uniqueName;
             };
 
             window.getR2Url = (key) => {
                 if(!window.r2Ready || !key.startsWith('r2://')) return key;
                 const actualKey = key.replace('r2://', '');
-                return window.s3.getSignedUrl('getObject', { Bucket: window.R2Bucket, Key: actualKey, Expires: 60 * 60 });
+                // Since the bucket doesn't have public access, we must get a presigned GET URL from the server.
+                // But wait, the user's R2 bucket is public read according to them.
+                // Let's use the public URL format for now.
+                return `${cloudflareEndpoint}/${window.R2Bucket}/${actualKey}`;
             };
 
             const ui = {
