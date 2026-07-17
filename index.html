@@ -281,11 +281,24 @@
         
         .stack-badge { background: rgba(250, 60, 60, 0.8); color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; vertical-align: super; margin-left: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
 
-        #live-chat-overlay {
-            position: absolute; top: 70px; left: 20px; 
-            pointer-events: none; display: flex; flex-direction: column; gap: 8px; z-index: 40;  
+        #live-chat-overlay, #admin-announcements {
+            position: absolute; left: 20px; 
+            pointer-events: none; display: flex; flex-direction: column; gap: 8px; z-index: 40;
+            transition: transform 0.4s var(--bounce), opacity 0.4s ease;
+            transform-origin: top left;
         }
+        #live-chat-overlay { top: 70px; }
+        #admin-announcements { bottom: 85px; transform-origin: bottom left; }
+        
+        #live-chat-overlay.hidden-controls, #admin-announcements.hidden-controls {
+            opacity: 0.7 !important;
+            transform: scale(0.65) translateX(-10px);
+        }
+        
         .video-container:fullscreen #live-chat-overlay,
+        .video-container:-webkit-full-screen #live-chat-overlay,
+        .video-container:fullscreen #admin-announcements,
+        .video-container:-webkit-full-screen #admin-announcements { display: flex; }
         .video-container:-webkit-full-screen #live-chat-overlay { display: flex; }
         .live-msg {
             color: #ffffff; font-size: 15px; font-weight: 800; padding: 4px 0;
@@ -806,6 +819,7 @@
                 </video>
                 
                 <div id="live-chat-overlay"></div>
+                <div id="admin-announcements"></div>
                 
                 <!-- Expand button to open the Chat Sidebar (Player Only) -->
                 <button id="chat-expand-btn" class="chat-expand-btn" onclick="CoreApp.openChatSidebar()" title="Open Chat Dock">&gt;</button>
