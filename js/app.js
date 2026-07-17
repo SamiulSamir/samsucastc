@@ -176,16 +176,10 @@
             
             const getAvatarHTML = (iconUrl, name, size = 40) => {
                 if (iconUrl) {
-                    let finalUrl = iconUrl;
                     if (iconUrl.startsWith('r2://')) {
-                        // For user icons, we can just await the blob URL since it's only set once on login
-                        window.getR2BlobUrlAsync(iconUrl).then(url => {
-                            document.getElementById('user-icon-display').src = url;
-                            document.getElementById('profile-icon').src = url;
-                        });
-                    } else if (iconUrl.startsWith('/')) {
-                        finalUrl = SERVER_URL + iconUrl;
+                        return `<img src="assets/loading.gif" data-r2="${iconUrl}" onload="window.resolveR2Image(this)" style="width: ${size}px; height: ${size}px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); flex-shrink: 0;">`;
                     }
+                    const finalUrl = iconUrl.startsWith('/') ? SERVER_URL + iconUrl : iconUrl;
                     return `<img src="${finalUrl}" style="width: ${size}px; height: ${size}px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); flex-shrink: 0;">`;
                 }
                 const firstLetter = (name || '?').charAt(0).toUpperCase();
