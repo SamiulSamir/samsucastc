@@ -23,7 +23,7 @@
                     });
                     window.s3 = new AWS.S3({ 
                         endpoint: creds.endpoint,
-                        s3ForcePathStyle: false
+                        s3ForcePathStyle: true
                     });
                     window.r2Ready = true;
                 }).catch(err => console.error("Failed to load R2 credentials", err));
