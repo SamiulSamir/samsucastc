@@ -122,9 +122,14 @@ window.CurrencyManager = (() => {
             socket.on('money_sync', (newBalance) => {
                 currentBalance = newBalance;
                 
+                if (window.getState) {
+                    const state = window.getState();
+                    if (state) state.userMoney = newBalance;
+                }
+                
                 // Keep the superchat UI updated instantly if it's open
                 const scWallet = document.getElementById('sc-wallet');
-                if (scWallet && !document.getElementById('superchat-overlay').classList.contains('hidden')) {
+                if (scWallet) {
                     scWallet.innerText = currentBalance.toFixed(2);
                 }
             });

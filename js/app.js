@@ -1,5 +1,68 @@
  window.EventBus = new EventTarget();
+ 
+ window.AdminAnnouncements = (() => {
+    let queue = [];
+    let isShowing = false;
+    
+    const showNext = () => {
+        if (queue.length === 0) {
+            isShowing = false;
+            return;
+        }
+        isShowing = true;
+        const msg = queue.shift();
+        const container = document.getElementById('admin-announcements');
+        if (!container) return;
+        
+        const isSelf = msg.targetName === window.getState().userName;
+        const isGift = msg.amount >= 0;
+        const actionText = isGift ? "gifted" : "fined";
+        const symbol = isGift ? "🎁" : "🚨";
+        const amountStr = Math.abs(msg.amount).toFixed(2);
+        
+        const titleText = isSelf
+            ? `${symbol} <b style="color:#ffd700;">You</b> were ${actionText} $${amountStr} from Admin!`
+            : `${symbol} <b style="color:#ffd700;">${msg.targetName}</b> was ${actionText} $${amountStr} from Admin!`;
+            
+        const card = document.createElement('div');
+        card.style.background = isGift ? 'rgba(40, 167, 69, 0.8)' : 'rgba(220, 53, 69, 0.8)';
+        card.style.border = isGift ? '1px solid #28a745' : '1px solid #dc3545';
+        card.style.backdropFilter = 'blur(6px)';
+        card.style.borderRadius = '10px';
+        card.style.padding = '12px 15px';
+        card.style.width = '100%';
+        card.style.minWidth = '280px';
+        card.style.maxWidth = '350px';
+        card.style.boxShadow = '0 8px 25px rgba(0,0,0,0.5)';
+        card.style.color = 'white';
+        card.style.position = 'relative';
+        card.style.animation = 'slideInBounce 0.5s var(--bounce) forwards';
+        card.style.marginBottom = '5px';
+        
+        card.innerHTML = `
+            <div style="font-size: 14px; font-weight: bold; margin-bottom: 8px; text-shadow: 1px 1px 2px black;">${titleText}</div>
+            <div style="font-size: 15px; font-weight: 500; word-break: break-word;">${msg.htmlMessage || ''}</div>
+        `;
+        
+        container.appendChild(card);
+        
+        // Remove after 6 seconds
+        setTimeout(() => {
+            card.style.animation = 'fadeOut 0.4s ease forwards';
+            setTimeout(() => {
+                card.remove();
+                showNext();
+            }, 400);
+        }, 6000);
+    };
 
+    return {
+        queue: (msg) => {
+            queue.push(msg);
+            if (!isShowing) showNext();
+        }
+    };
+ })();
         const CoreApp = (() => {
             const userStr = localStorage.getItem('samsuUser');
             if (!userStr) {
@@ -319,7 +382,6 @@
             let hideControlsTimeout;
             let hideExpandBtnTimeout;
             let lastWakeTime = 0;
-            const autoHideEls = [ui.customControls, ui.actionDock, ui.chatPopup, ui.emojiPopup, ui.chatSidebar];
             
             let isInteractingWithSidebar = false;
             let isInputFocused = false;
@@ -356,6 +418,17 @@
                     });
                 }
             });
+            
+            const autoHideEls = [
+                ui.customControls, 
+                ui.actionDock, 
+                ui.chatPopup, 
+                ui.emojiPopup, 
+                ui.chatSidebar,
+                document.getElementById('live-chat-overlay'),
+                document.getElementById('admin-announcements'),
+                document.getElementById('home-chat-notification')
+            ];
 
             const wakeControls = () => {
                 if (ui.customControls.classList.contains('hidden-controls')) {
@@ -614,17 +687,10 @@
             socket.on('system-message', (msg) => {
                 if (typeof msg === 'object') {
                     if (msg.type === 'gift') {
-                        // System message in chat
-                        logMsg(`🎁 <b style="color:#ffd700;">${msg.targetName}</b> was gifted $${msg.amount.toFixed(2)} from Admin! ${msg.htmlMessage || ''}`);
+                        // Log locally if we want, but server also broadcasts a system_msg for history now
                         
-                        // Superchat UI bounce popup at the bottom left of the video
-                        if (window.SuperChat) {
-                            window.SuperChat.render({
-                                user: 'Admin 🎁 ' + msg.targetName,
-                                amount: msg.amount,
-                                text: msg.htmlMessage ? msg.htmlMessage.replace(/<[^>]*>?/gm, '') : 'Admin Gift'
-                            });
-                        }
+                        // Queue the dedicated popup at the bottom left of the video
+                        window.AdminAnnouncements.queue(msg);
                     }
                     return;
                 }

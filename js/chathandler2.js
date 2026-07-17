@@ -236,6 +236,26 @@ window.ChatHandler = (() => {
             `;
         } else if (msg.type === 'system_msg') {
             el.innerHTML = `<div class="sidebar-content" style="width: 100%; text-align: center; color: #a1a1aa; font-size: 0.85em; font-style: italic;">${msg.text}</div>`;
+        } else if (msg.type === 'superchat') {
+            const dollars = Math.floor(msg.amount || 0);
+            const cents = Math.round(((msg.amount || 0) - dollars) * 100);
+            let amountStr = '';
+            if (dollars > 0) amountStr += `${dollars}$ `;
+            if (cents > 0) amountStr += `${cents}cents `;
+            if (amountStr === '') amountStr = '0$ ';
+
+            let contentHtml = msg.mediaUrl 
+                ? (msg.mediaUrl.startsWith('r2://') ? `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" data-r2="${msg.mediaUrl}" onload="window.resolveR2Image(this)" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 8px; display: block; object-fit: contain;">` : `<img src="${window.getR2Url(msg.mediaUrl)}" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 8px; display: block; object-fit: contain;">`)
+                : (msg.text ? `<div style="color: white; font-weight: 500; word-break: break-word; margin-top: 4px;">${msg.text}</div>` : '');
+
+            el.innerHTML = `
+                <div class="sidebar-content" style="width: 100%; padding: 10px; background: rgba(255, 215, 0, 0.15); border: 1px solid rgba(255, 215, 0, 0.4); border-radius: 8px; margin: 4px 0;">
+                    <div style="color: rgb(199, 199, 199); font-size: 13px; font-weight: bold; margin-bottom: 4px; text-align: center;">
+                        <b style="color:white;">${msg.user}</b> Donated <b style="color:rgb(255, 94, 94);">${amountStr}</b>
+                    </div>
+                    ${contentHtml}
+                </div>
+            `;
         }
 
         ui.sidebarMessages.appendChild(el);
@@ -342,6 +362,26 @@ window.ChatHandler = (() => {
                         `;
                     } else if (msg.type === 'system_msg') {
                         el.innerHTML = `<div class="sidebar-content" style="width: 100%; text-align: center; color: #a1a1aa; font-size: 0.85em; font-style: italic;">${msg.text}</div>`;
+                    } else if (msg.type === 'superchat') {
+                        const dollars = Math.floor(msg.amount || 0);
+                        const cents = Math.round(((msg.amount || 0) - dollars) * 100);
+                        let amountStr = '';
+                        if (dollars > 0) amountStr += `${dollars}$ `;
+                        if (cents > 0) amountStr += `${cents}cents `;
+                        if (amountStr === '') amountStr = '0$ ';
+
+                        let contentHtml = msg.mediaUrl 
+                            ? (msg.mediaUrl.startsWith('r2://') ? `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" data-r2="${msg.mediaUrl}" onload="window.resolveR2Image(this)" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 8px; display: block; object-fit: contain;">` : `<img src="${window.getR2Url(msg.mediaUrl)}" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 8px; display: block; object-fit: contain;">`)
+                            : (msg.text ? `<div style="color: white; font-weight: 500; word-break: break-word; margin-top: 4px;">${msg.text}</div>` : '');
+
+                        el.innerHTML = `
+                            <div class="sidebar-content" style="width: 100%; padding: 10px; background: rgba(255, 215, 0, 0.15); border: 1px solid rgba(255, 215, 0, 0.4); border-radius: 8px; margin: 4px 0;">
+                                <div style="color: rgb(199, 199, 199); font-size: 13px; font-weight: bold; margin-bottom: 4px; text-align: center;">
+                                    <b style="color:white;">${msg.user}</b> Donated <b style="color:rgb(255, 94, 94);">${amountStr}</b>
+                                </div>
+                                ${contentHtml}
+                            </div>
+                        `;
                     }
                     
                     if (el.innerHTML) {
