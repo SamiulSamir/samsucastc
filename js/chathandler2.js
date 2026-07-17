@@ -22,7 +22,14 @@ window.ChatHandler = (() => {
         const fontSize = customClass === 'float-avatar' ? '12px' : '14px';
 
         let imgHtml = '';
-        if (msgIcon) {
+        
+        // 1. Try AvatarCache first (instant blob URL from IndexedDB)
+        const cachedUrl = window.AvatarCache ? window.AvatarCache.getAvatarUrl(userName) : null;
+        if (cachedUrl) {
+            imgHtml = `<img src="${cachedUrl}" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`;
+        }
+        // 2. Fall back to msgIcon (for unregistered users or cache not ready yet)
+        else if (msgIcon) {
             if (msgIcon.startsWith('r2://')) {
                 imgHtml = `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" data-r2="${msgIcon}" onload="window.resolveR2Image(this)" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`;
             } else {
@@ -31,10 +38,11 @@ window.ChatHandler = (() => {
             }
         }
 
+        const showFallback = imgHtml ? 'none' : 'flex';
         return `
             <div class="${customClass}-wrapper" style="position:relative; display:inline-block; width:${size}; height:${size}; flex-shrink:0; border-radius:50%; overflow:hidden; vertical-align:middle;">
                 ${imgHtml}
-                <div style="display:${msgIcon ? 'none' : 'flex'}; width:100%; height:100%; background:${color}; color:white; align-items:center; justify-content:center; font-weight:bold; font-size:${fontSize}; line-height:1; font-family:sans-serif;">${firstLetter}</div>
+                <div style="display:${showFallback}; width:100%; height:100%; background:${color}; color:white; align-items:center; justify-content:center; font-weight:bold; font-size:${fontSize}; line-height:1; font-family:sans-serif;">${firstLetter}</div>
             </div>
         `;
     }
@@ -239,7 +247,11 @@ window.ChatHandler = (() => {
                 const notif = document.getElementById('home-chat-notification');
                 if (notif) {
                     const notifAvatar = document.getElementById('notif-avatar');
-                    if (msg.icon && msg.icon.startsWith('r2://')) {
+                    // Try AvatarCache first
+                    const cachedNotifUrl = window.AvatarCache ? window.AvatarCache.getAvatarUrl(msg.user) : null;
+                    if (cachedNotifUrl) {
+                        notifAvatar.src = cachedNotifUrl;
+                    } else if (msg.icon && msg.icon.startsWith('r2://')) {
                         notifAvatar.setAttribute("data-r2", msg.icon);
                         notifAvatar.onload = function() { window.resolveR2Image(this); };
                         notifAvatar.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";

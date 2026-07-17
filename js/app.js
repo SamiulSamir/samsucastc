@@ -187,6 +187,12 @@
             let hostState = { activePeers: {}, peerNames: {}, validVoters: new Set(), seekVotes: new Set(), readyPeers: new Set(), resumeVotes: new Set(), currentVoteType: null, voteTimeout: null, preparingPlay: false, preparingPlayReason: null, autoPlayTimer: null, seekInitiator: null };
             
             const getAvatarHTML = (iconUrl, name, size = 40) => {
+                // 1. Try AvatarCache first (instant blob URL from IndexedDB)
+                const cachedUrl = window.AvatarCache ? window.AvatarCache.getAvatarUrl(name) : null;
+                if (cachedUrl) {
+                    return `<img src="${cachedUrl}" style="width: ${size}px; height: ${size}px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); flex-shrink: 0;">`;
+                }
+                // 2. Fall back to iconUrl
                 if (iconUrl) {
                     if (iconUrl.startsWith('r2://')) {
                         return `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" data-r2="${iconUrl}" onload="window.resolveR2Image(this)" style="width: ${size}px; height: ${size}px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); flex-shrink: 0;">`;
@@ -212,6 +218,30 @@
 
             updateHeaderAvatar(state.userIcon, state.userName);
             document.getElementById('header-name').innerText = state.userName;
+
+            // Initialize avatar cache from IndexedDB
+            if (window.AvatarCache) {
+                window.AvatarCache.init().then(() => {
+                    // Cache own icon immediately
+                    if (state.userIcon && state.userIcon.startsWith('r2://')) {
+                        window.AvatarCache.setOwnIcon(state.userName, state.userIcon);
+                    }
+                });
+            }
+
+            // Listen for the full user icon registry from server
+            socket.on('user_icons', (iconMap) => {
+                if (window.AvatarCache) {
+                    window.AvatarCache.processRegistry(iconMap);
+                }
+            });
+
+            // Listen for individual icon updates (when someone changes their profile pic)
+            socket.on('user_icon_updated', ({ username, icon }) => {
+                if (window.AvatarCache) {
+                    window.AvatarCache.updateUser(username, icon);
+                }
+            });
 
             socket.emit('request_lobby_info');
 
@@ -1345,6 +1375,10 @@
                             if (data.user.profileIcon) {
                                 state.userIcon = data.user.profileIcon; 
                                 userData.profileIcon = data.user.profileIcon;
+                                // Update own icon in the avatar cache immediately
+                                if (window.AvatarCache) {
+                                    window.AvatarCache.setOwnIcon(state.userName, data.user.profileIcon);
+                                }
                             }
                             localStorage.setItem('samsuUser', JSON.stringify(data.user));
                             document.getElementById('header-name').innerText = state.userFullname;
