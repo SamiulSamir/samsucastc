@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Advanced Chat Input</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        
+        /* contenteditable placeholder fix */
+        [contenteditable]:empty:before {
+            content: attr(placeholder);
+            color: #9ca3af;
+            pointer-events: none;
+            display: block;
+        }
+        
+        /* Hide images that Gboard temporarily injects so they don't flash */
+        #message-input img { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-100 h-screen flex flex-col font-sans sm:pb-0 overflow-hidden">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm p-4 flex items-center gap-3 z-10 shrink-0">
+        <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">JS</div>
+        <div>
+            <h1 class="font-semibold text-gray-800">John Smith</h1>
+            <p class="text-xs text-green-500">Online</p>
+        </div>
+    </header>
+
+    <!-- Chat History -->
+    <main id="chat-history" class="flex-1 overflow-y-auto p-4 flex flex-col gap-4 relative">
+        <div class="text-center text-xs text-gray-400 my-2">Today</div>
+        
+        <div class="self-start bg-white text-gray-800 p-3 rounded-2xl rounded-tl-sm shadow-sm max-w-[85%] sm:max-w-[70%]">
+            <p>Hey! Android Gboard should now happily accept GIFs without the toast error. 🚀</p>
+        </div>
+    </main>
+
+    <!-- Input Area Container -->
+    <footer class="glass-panel border-t border-gray-200 p-2 sm:p-4 shrink-0 shadow-[0_-5px_15px_-15px_rgba(0,0,0,0.3)] z-20">
+        <div class="flex items-end gap-2 max-w-5xl mx-auto w-full">
+            
+            <!-- Attachment Button -->
+            <label for="file-input" class="p-2 sm:p-3 text-gray-500 hover:text-blue-500 hover:bg-blue-50 rounded-full cursor-pointer transition-colors shrink-0 mb-1">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                <input type="file" id="file-input" class="hidden" multiple accept="image/*,video/*,.pdf,.doc,.docx">
+            </label>
+
+            <!-- 
+                ContentEditable Div 
+                Stripped of ARIA roles that confuse Gboard's rich media checks
+            -->
+            <div class="flex-1 bg-gray-100 rounded-3xl border border-transparent focus-within:border-blue-400 focus-within:bg-white transition-all flex items-end min-h-[48px]">
+                <div 
+                    id="message-input" 
+                    contenteditable="true"
+                    spellcheck="true"
+                    class="w-full bg-transparent max-h-32 overflow-y-auto rounded-3xl py-3 px-4 outline-none text-gray-700 cursor-text whitespace-pre-wrap break-words" 
+                    placeholder="Type a message, or insert a GIF..."
+                ></div>
+            </div>
+
+            <!-- Send Button -->
+            <button id="send-btn" class="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 active:scale-95 transition-all shadow-md shrink-0 mb-1">
+                <svg class="w-6 h-6 translate-x-[2px] translate-y-[-1px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+            </button>
+        </div>
+    </footer>
+
+    <script>
+        const messageInput = document.getElementById('message-input');
+        const chatHistory = document.getElementById('chat-history');
+        const fileInput = document.getElementById('file-input');
+        const sendBtn = document.getElementById('send-btn');
+        
+        // 1. Core Sending Logic for Files
+        function sendFilesImmediately(files) {
+            if (!files || files.length === 0) return;
+
+            const bubbleContainer = document.createElement('div');
+            bubbleContainer.className = 'self-end flex flex-col gap-1 items-end max-w-[85%] sm:max-w-[70%] mb-1';
+
+            const fileGrid = document.createElement('div');
+            fileGrid.className = 'flex flex-wrap gap-2 justify-end';
+            
+            Array.from(files).forEach(file => {
+                const url = URL.createObjectURL(file);
+                const isImage = file.type.startsWith('image/') || file.type.startsWith('video/') || file.type.includes('gif');
+                
+                if (isImage) {
+                    fileGrid.innerHTML += `<img src="${url}" class="rounded-2xl border border-gray-100 shadow-sm max-h-60 object-contain cursor-pointer hover:brightness-95 transition-all bg-white">`;
+                } else {
+                    fileGrid.innerHTML += `
+                        <div class="bg-blue-50 text-blue-700 px-4 py-3 rounded-2xl flex items-center gap-3 border border-blue-100 cursor-pointer shadow-sm">
+                            <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <span class="text-sm font-medium truncate max-w-[150px]">${file.name}</span>
+                        </div>
+                    `;
+                }
+            });
+
+            bubbleContainer.appendChild(fileGrid);
+            chatHistory.appendChild(bubbleContainer);
+            chatHistory.scrollTo({ top: chatHistory.scrollHeight, behavior: 'smooth' });
+        }
+
+        // 2. Extract Files helper
+        function extractFiles(dataTransfer) {
+            if (!dataTransfer) return [];
+            let files = [];
+            for (let item of dataTransfer.items || []) {
+                if (item.kind === 'file') {
+                    const file = item.getAsFile();
+                    if (file) files.push(file);
+                }
+            }
+            if (files.length === 0 && dataTransfer.files) {
+                files = Array.from(dataTransfer.files);
+            }
+            return files;
+        }
+
+        // 3. Android Gboard Catch (Intercepts native DOM injections)
+        async function extractImagesFromDOM() {
+            const images = Array.from(messageInput.querySelectorAll('img'));
+            if (images.length === 0) return;
+
+            const files = [];
+            for (let img of images) {
+                try {
+                    // Fetch the data URI or Blob that Android Chrome injected
+                    const res = await fetch(img.src);
+                    const blob = await res.blob();
+                    
+                    // Determine extension and create File object
+                    const ext = blob.type.split('/')[1] || 'gif';
+                    const file = new File([blob], `gboard-media.${ext}`, { type: blob.type });
+                    files.push(file);
+                } catch (e) {
+                    console.error("Failed to extract injected image", e);
+                }
+                img.remove(); // Remove the raw tag from the text input
+            }
+
+            if (files.length > 0) {
+                sendFilesImmediately(files);
+            }
+        }
+
+        // Listen for input mutations (where Android pastes GIFs)
+        messageInput.addEventListener('input', extractImagesFromDOM);
+
+        // 4. Intercept 'paste' (Windows, iOS, Standard Browsers)
+        messageInput.addEventListener('paste', (e) => {
+            const files = extractFiles(e.clipboardData || window.clipboardData);
+            
+            if (files.length > 0) {
+                e.preventDefault(); // Prevents DOM mutation so our 'input' listener doesn't double-fire
+                sendFilesImmediately(files);
+                return;
+            }
+
+            // Fallback for plain text to strip HTML
+            e.preventDefault();
+            const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+            document.execCommand('insertText', false, text);
+        });
+
+        // 5. Intercept Drop (Drag & Drop functionality)
+        messageInput.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const files = extractFiles(e.dataTransfer);
+            if (files.length > 0) sendFilesImmediately(files);
+        });
+
+        // 6. Manual Selection
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) sendFilesImmediately(e.target.files);
+            fileInput.value = '';
+        });
+
+        // 7. Send Text Message Logic
+        function sendTextMessage() {
+            const text = messageInput.innerText.trim();
+            if (!text) return;
+
+            const bubbleContainer = document.createElement('div');
+            bubbleContainer.className = 'self-end flex flex-col gap-1 items-end max-w-[85%] sm:max-w-[70%] mb-1';
+
+            const textBubble = document.createElement('div');
+            textBubble.className = `bg-blue-500 text-white p-3 px-4 rounded-2xl rounded-br-sm shadow-sm whitespace-pre-wrap text-sm sm:text-base`;
+            textBubble.innerText = text;
+            
+            bubbleContainer.appendChild(textBubble);
+            chatHistory.appendChild(bubbleContainer);
+            chatHistory.scrollTo({ top: chatHistory.scrollHeight, behavior: 'smooth' });
+
+            messageInput.innerText = '';
+            messageInput.focus();
+        }
+
+        // Listeners for Text Sending
+        sendBtn.addEventListener('click', sendTextMessage);
+        
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendTextMessage();
+            }
+            // Prevent bold/italic bindings messing with the div
+            if ((e.ctrlKey || e.metaKey) && ['b', 'i', 'u'].includes(e.key.toLowerCase())) {
+                e.preventDefault();
+            }
+        });
+
+    </script>
+    <script>
+    // Cordova Gboard Native Bridge Listener
+    window.addEventListener('message', function(e) {
+        if (e.data && e.data.type === 'gboard-gif') {
+            const input = document.getElementById('message-input');
+            if (input) {
+                const img = document.createElement('img');
+                img.src = e.data.base64;
+                input.appendChild(img);
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        }
+    });
+</script>
+</body>
+</html>

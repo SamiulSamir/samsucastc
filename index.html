@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Samsu Cast</title>
+    <style>
+        /* Custom Font Placeholder */
+        @font-face {font-family: 'Pfont';src: url('assets/fonts/pfont.ttf') format('truetype');}
+        @font-face {font-family: 'emojifontP';src: url('assets/fonts/emojifontP.ttf') format('truetype');}
+
+        :root {
+            --bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --smooth: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* FIX 5: Made all generic elements user-select none to prevent unwanted selection */
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: rgba(255, 255, 255, 0.018);
+        }
+
+        *:not([contenteditable]) { 
+            user-select: none; 
+            -webkit-user-select: none; 
+        }
+
+        [contenteditable] {
+            user-select: text;
+            -webkit-user-select: text;
+        }
+        
+        /* Custom Scrollbar */
+        *::-webkit-scrollbar { width: 7px; height: 7px; }
+        *::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; backdrop-filter: blur(5px); cursor:auto; }
+        *::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 10px; backdrop-filter: blur(5px); cursor:auto; }
+        *::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.5); }
+        *::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+        *::-webkit-scrollbar-corner { background: transparent; }
+
+        body { 
+            font-family: 'Pfont','emojifontP', system-ui, -apple-system, sans-serif; 
+            background: #0f0f0f; 
+            color: #e5e5e5; 
+            margin: 0; 
+            min-width: 375px;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        .container { width: 100%; max-width: 900px; position: relative; z-index: 1; }
+        h1 { text-align: center; color: #ffffff; font-weight: 600; margin-bottom: 25px; }
+        .hidden { display: none !important; }
+        
+        .card, .module-container { 
+            background: rgba(20, 20, 28, 0.65);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 30px; 
+            border-radius: 24px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1); 
+            text-align: center; 
+            transition: all 0.4s var(--bounce);
+        }
+        
+        input[type="text"], input[type="number"], input[type="file"] { 
+            background: rgba(45, 45, 45, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 16px;
+            backdrop-filter: blur(25px);
+            font-family: 'Pfont','emojifontP', sans-serif;
+            font-size: 0.95rem;
+            width: 80%; 
+            max-width: 300px; 
+            outline: none;
+            transition: all 0.3s ease;
+            margin: 10px 0;
+            user-select: auto;
+            -webkit-user-select: auto;
+        }
+        input[type="text"]:focus, input[type="number"]:focus { 
+            background: rgba(55, 55, 55, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+        }
+
+        /* contenteditable placeholder and media style fixes */
+        [contenteditable]:empty:before {
+            content: attr(placeholder);
+            color: #9ca3af;
+            pointer-events: none;
+            display: block;
+        }
+        .chat-popup [contenteditable] img, .emoji-popup [contenteditable] img, #superchat-overlay [contenteditable] img { 
+            display: none !important; 
+        }
+
+        .editable-input {
+            background: rgba(45, 45, 45, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 16px;
+            backdrop-filter: blur(25px);
+            font-family: 'Pfont','emojifontP', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s ease;
+            user-select: text;
+            -webkit-user-select: text;
+            cursor: text;
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow-y: auto;
+            max-height: 100px;
+        }
+        .editable-input:focus {
+            background: rgba(55, 55, 55, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+        }
+        .chat-popup .editable-input { width: 200px; margin: 0; min-height: 44px; display: block; }
+        .emoji-popup .editable-input { width: 140px; text-align: center; margin: 0; min-height: 44px; display: block; }        
+        
+        button { 
+            font-family: 'Pfont','emojifontP', sans-serif;
+            padding: 12px 24px; 
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px; 
+            color: #f2f2f2;
+            font-size: 1rem;
+            cursor: pointer; 
+            transition: all 0.3s var(--bounce); 
+            box-shadow: none;
+        }
+        button:hover:not(:disabled) { 
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.02) translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        
+        button.warning { 
+            background: rgba(250, 60, 60, 0.15);
+            color: #ff9999;
+            border-color: rgba(250, 60, 60, 0.2);
+        }
+        button.warning:hover:not(:disabled) { 
+            background: rgba(250, 60, 60, 0.4) !important; 
+            color: #ffffff;
+            border-color: rgba(250, 60, 60, 0.5) !important;
+        }
+        button:disabled { filter: grayscale(1); opacity: 0.5; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+        #warning-box { 
+            background: linear-gradient(135deg, rgba(250, 60, 60, 0.2), rgba(200, 20, 20, 0.1));
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(250, 60, 60, 0.3); 
+            padding: 20px; 
+            border-radius: 16px; 
+            margin-top: 20px; 
+            box-shadow: 0 8px 32px rgba(250, 60, 60, 0.15);
+            color: #ffcccc;
+        }
+
+        /* Video Player */
+        .video-container { 
+            position: relative; 
+            width: 100%; 
+            border-radius: 20px; 
+            overflow: hidden; 
+            background: #000; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8); 
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        video { 
+            width: 100%; 
+            max-height: 100%; 
+            object-fit: contain; 
+            display: block; 
+            cursor: pointer; 
+            background: #000;
+        }
+        
+        ::cue {
+            background: transparent !important;
+            color: #ffffff !important;
+            font-family: 'Pfont','emojifontP', sans-serif !important;
+            font-size: clamp(1.2rem, 4vw, 2.5rem) !important;
+            text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 0px 2px 0 #000, 2px 0px 0 #000, 0px -2px 0 #000, -2px 0px 0 #000, 0px 0px 8px rgba(0,0,0,0.9), 0px 0px 15px rgba(0,0,0,0.5) !important;
+            padding: 0 !important;
+        }
+
+        .touch-zone-container {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 80px;
+            display: flex; z-index: 5; pointer-events: none;
+            justify-content: space-between;
+        }
+        .touch-zone {
+            width: 40%; pointer-events: auto; touch-action: manipulation;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .seek-ripple {
+            background: rgba(255,255,255,0.08); backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px 30px; border-radius: 50%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; transform: scale(0.5); pointer-events: none;
+            transition: opacity 0.2s, transform 0.2s var(--bounce);
+        }
+        .seek-ripple.active { opacity: 1; transform: scale(1); }
+        .seek-ripple span { font-weight: bold; font-size: 24px; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
+        .seek-ripple svg { width: 30px; height: 30px; fill: white; margin-bottom: 5px; }
+
+        /* Expand Button for Left Chat Dock */
+        .chat-expand-btn {    position: absolute;
+            left: 20px;
+            top: 20px;
+            z-index: 51;
+            background: rgba(20,20,28,0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            width: 44px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            transition: transform 0.2s var(--bounce), opacity 0.4s ease;
+        }
+        .video-container:fullscreen .chat-expand-btn,
+        .video-container:-webkit-full-screen .chat-expand-btn { display: flex; }
+        .chat-expand-btn:hover { transform: scale(1.1) translateX(2px); background: rgba(30,30,40,0.9); }
+        .chat-expand-btn.hidden-controls { opacity: 0; pointer-events: none; }
+
+        /* Left Chat Sidebar (Premium Glass Aesthetic) */
+        .chat-sidebar {
+            position: fixed; right: 0; top: 0; bottom: 0; width: 320px;
+            background: rgba(15,15,22,0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border-left: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column;
+            transform: translateX(100%); transition: transform 0.4s var(--bounce); z-index: 1000;
+        }
+        .chat-sidebar.active { transform: translateX(0); }
+        
+        .chat-sidebar-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .chat-sidebar-header span { font-weight: bold; font-size: 14px; color: #fff; }
+        .chat-close-btn {
+            background: transparent !important; border: none !important; color: #aaa !important;
+            padding: 0 !important; font-size: 18px !important; font-weight: bold; width: auto !important; height: auto !important;
+            cursor: pointer; box-shadow: none !important; transition: color 0.2s, transform 0.2s !important;
+        }
+        .chat-close-btn:hover { color: #ff5555 !important; transform: scale(1.1) !important; background: transparent !important; }
+
+        .sidebar-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+        .sidebar-msg { display: flex; gap: 10px; align-items: flex-start; }
+        .sidebar-content { display: flex; flex-direction: column; }
+        .sidebar-meta { font-size: 13px; color: #aaa; margin-bottom: 3px; display: flex; align-items: center; gap: 8px;}
+        .sidebar-time { font-size: 11px; color: #777; }
+        .sidebar-text { font-size: 14px; color: #fff; background: rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 0 12px 12px 12px; line-height: 1.4; word-break: break-word;}
+        .sidebar-emoji { font-size: 26px; }
+        
+        .stack-badge { background: rgba(250, 60, 60, 0.8); color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; vertical-align: super; margin-left: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+
+        #live-chat-overlay {
+            position: absolute; top: 70px; left: 20px; 
+            pointer-events: none; display: flex; flex-direction: column; gap: 8px; z-index: 40;  
+        }
+        .video-container:fullscreen #live-chat-overlay,
+        .video-container:-webkit-full-screen #live-chat-overlay { display: flex; }
+        .live-msg {
+            color: #ffffff; font-size: 15px; font-weight: 800; padding: 4px 0;
+            text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 0px 4px 10px rgba(0,0,0,0.8);
+            animation: slideInBounce 0.5s var(--bounce) forwards, fadeOut 0.4s var(--smooth) 3.6s forwards;
+        }
+
+        /* Interactive Reaction Dock & Chat */
+        .action-dock {
+            position: absolute; right: 15px; top: 20px; flex-direction: column; gap: 12px; z-index: 40;
+            background: rgba(20,20,28,0.5); backdrop-filter: blur(15px); padding: 12px 10px; border-radius: 20px; 
+            border: 1px solid rgba(255,255,255,0.1); transition: opacity 0.4s ease; 
+        }
+        .video-container:fullscreen .action-dock,
+        .video-container:-webkit-full-screen .action-dock { display: flex; }
+        
+        .dock-btn { 
+            background: transparent; border: none; font-size: 26px; cursor: pointer; 
+            transition: transform 0.2s var(--bounce); padding: 5px; box-shadow: none; line-height: 1;
+        }
+        .dock-btn:hover { transform: scale(1.25); background: transparent; }
+
+        .chat-popup, .emoji-popup {
+            position: absolute; right: 80px; top: 20px; background: rgba(20,20,28,0.7); backdrop-filter: blur(25px);
+            padding: 12px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.15); z-index: 45; display: flex;
+            transition: opacity 0.4s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+        }
+        .chat-popup { gap: 8px; }
+        .emoji-popup { top: 70px; flex-direction: column; gap: 10px; align-items: center; }
+        
+        .chat-popup input, .emoji-popup input { margin: 0; }
+        .chat-popup button, .emoji-popup button { padding: 10px 16px; font-size: 0.9rem; }
+        
+        .emoji-btn { cursor: pointer; font-size: 26px; transition: transform 0.2s var(--bounce); display: inline-block; }
+        .emoji-btn:hover { transform: scale(1.3); }
+
+        .floating-area {
+            position: absolute; top: 0; bottom: 80px; left: 0; right: 0; height: auto; pointer-events: none; z-index: 35; overflow: hidden;
+        }
+        
+        .phys-float { position: absolute; left: 0; top: 0; will-change: transform, opacity; display: flex; align-items: center; gap: 8px; }
+        .float-item { background: rgba(26,26,26,0.65); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        
+        .float-reaction { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; padding: 0px; border-radius: 0%; border: none; box-shadow: none; }
+        
+        @keyframes floatBounce {
+            0%, 100% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.15) translateY(-8px); }
+        }
+        .reaction-emoji { 
+            font-size: 38px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); 
+            display: inline-block;
+            animation: floatBounce 1.2s ease-in-out infinite; 
+        }
+        
+        .chat-text { font-size: 15px; font-weight: 500; font-family: 'Pfont','emojifontP', sans-serif; color: white;}
+
+        .custom-controls { 
+            position: absolute; bottom: 0; left: 0; right: 0; 
+            background: linear-gradient(transparent, rgba(0,0,0,0.95)); 
+            padding: 40px 20px 15px; display: flex; align-items: center; gap: 15px; 
+            opacity: 1; transition: opacity 0.4s ease; z-index: 10;
+        }
+        .hidden-controls { opacity: 0 !important; pointer-events: none !important; }
+        
+        .progress-bar { 
+            flex-grow: 1; height: 8px; background: rgba(255,255,255,0.15); 
+            border-radius: 4px; cursor: pointer; position: relative; overflow: hidden; 
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .progress-filled { 
+            height: 100%; background: #ffffff; border-radius: 4px; width: 0%; 
+            pointer-events: none; transition: width 0.1s linear; 
+            box-shadow: 0 0 10px rgba(255,255,255,0.5); 
+        }
+        
+        .control-btn { background: none; border: none; color: white; font-size: 24px; padding: 0 5px; cursor: pointer; box-shadow: none; transition: transform 0.2s var(--bounce), color 0.2s; }
+        .control-btn:hover { background: none; color: #ccc; transform: scale(1.15); box-shadow: none; }
+        #time-display { font-size: 14px; color: #ccc; min-width: 90px; font-weight: 500; font-variant-numeric: tabular-nums; }
+        .cc-btn { font-size: 18px; font-weight: bold; border-radius: 6px; padding: 0 8px; border: 1px solid rgba(255,255,255,0.5); margin-right: 5px; transition: opacity 0.2s ease; }
+
+        .overlay { 
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+            background: rgba(26, 26, 26, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            z-index: 20; gap: 20px; text-align: center; padding: 20px;
+            animation: fadeIn 0.3s var(--smooth);
+        }
+        .overlay p { font-size: 22px; font-weight: 700; margin: 0; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
+        .overlay-buttons { display: flex; gap: 15px; margin-top: 10px; }
+        
+        .vote-timer-container { width: 80%; max-width: 400px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-top: 15px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); }
+        .vote-timer-bar { height: 100%; width: 100%; background: #fff; }
+        
+        .big-red-btn { 
+            background: rgba(255, 255, 255, 0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; 
+            width: 90px; height: 90px; font-size: 40px; cursor: pointer; 
+            box-shadow: 0 0 30px rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; 
+            animation: pulse 2s infinite; transition: all 0.3s var(--bounce);
+        }
+        .big-red-btn:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.05); box-shadow: 0 0 40px rgba(255,255,255,0.3); }
+
+        #modules-layout { display: flex; gap: 20px; flex-direction: column; width: 100%; }
+        #sys-chatbox { height: 180px; overflow-y: auto; font-size: 14px; color: #ccc; margin-top: 15px; }
+        .sys-msg { margin: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;}
+
+        @keyframes fadeIn { from { opacity: 0; backdrop-filter: blur(0px); } to { opacity: 1; backdrop-filter: blur(12px); } }
+        @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
+        @keyframes slideInBounce { 0% { transform: translateX(-30px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 20px rgba(255,255,255,0.1); } 50% { transform: scale(1.05); box-shadow: 0 0 40px rgba(255,255,255,0.2); } 100% { transform: scale(1); box-shadow: 0 0 20px rgba(255,255,255,0.1); } }
+        @keyframes textBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        .bounce-anim { animation: textBounce 0.4s var(--bounce); display: inline-block; }
+        /* Fullscreen and Video Active overrides */
+        body.is-fullscreen .chat-sidebar {
+            right: auto;
+            left: 0;
+            transform: translateX(-100%);
+        }
+        body.is-fullscreen .chat-sidebar.active {
+            transform: translateX(0);
+        }
+        body.video-active .sidebar-input-area,
+        body.video-active #home-chat-wrapper {
+            display: none !important;
+        }
+
+        .glass-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            padding: 14px 26px; 
+            color: rgb(255, 255, 255);
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            text-shadow: rgba(41, 20, 84, 0.41) 1px 2px 7px;
+            user-select: none;
+            background-color: transparent;
+            background-image: linear-gradient(135deg, rgba(250, 4, 82, 0.5), rgba(228, 103, 0, 0.5));
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            border-radius: 16px;
+            box-shadow: rgba(250, 4, 82, 0.15) 0px 8px 20px 0px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .glass-btn:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: rgba(250, 4, 82, 0.3) 0px 12px 25px 0px;
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .glass-btn:active {
+            transform: translateY(1px) scale(0.98);
+            box-shadow: rgba(250, 4, 82, 0.1) 0px 4px 10px 0px;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .lobby-bg {
+            background: radial-gradient(circle at center, #241635 0%, #0f0f15 100%);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .avatar-fallback {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            text-transform: uppercase;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary, #3b82f6), #8b5cf6);
+            flex-shrink: 0;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .timer-progress {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        .timer-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #ef4444);
+            width: 100%;
+            transition: width 1s linear;
+        }
+
+        /* Vote System UI */
+        .vote-candidate-btn {
+            position: relative;
+            justify-content: space-between !important;
+            padding-left: 45px !important; 
+            padding-right: 15px !important;
+        }
+
+        .vote-check {
+            position: absolute;
+            left: 15px;
+            color: #4ade80;
+            font-size: 20px;
+            font-weight: bold;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .vote-check.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .vote-stack-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-left: 10px;
+        }
+
+        .vote-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid var(--surface-light);
+            margin-left: -10px; /* Overlap effect */
+            object-fit: cover;
+            background: var(--surface-light);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .vote-avatar:first-child {
+            margin-left: 0;
+        }
+
+        .vote-candidate-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-grow: 1;
+            justify-content: flex-start;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0) translateX(20px); opacity: 0; }
+            to { transform: scale(1) translateX(0); opacity: 1; }
+        }
+    </style>
+    <script>
+        const _samsuServerUrl = localStorage.getItem('samsuServerUrl');
+        if (!_samsuServerUrl) {
+            window.location.href = 'init.html';
+        } else {
+            document.write('<script src="' + _samsuServerUrl + '/socket.io/socket.io.js"><\\/script>');
+        }
+    </script>
+    
+    <!-- Unified Media Extraction Helper for ContentEditable Divs -->
+    <script>
+        // Global prevention to stop Windows from opening dropped files in a new tab
+        document.addEventListener('dragenter', function(e) { e.preventDefault(); }, false);
+        document.addEventListener('dragover', function(e) { e.preventDefault(); }, false);
+        document.addEventListener('drop', function(e) { e.preventDefault(); }, false);
+
+        window.MediaHelper = {
+            attach: (elementId, sendCallback) => {
+                const el = document.getElementById(elementId);
+                if (!el) return;
+
+                const handleFiles = (files) => {
+                    if (!files || files.length === 0) return;
+                    const file = Array.from(files).find(f => f.type.startsWith('image/') || f.type.startsWith('video/') || f.name.endsWith('.gif'));
+                    if (file) {
+                        el.innerText = ''; 
+                        sendCallback(file);
+                    }
+                };
+
+                const extractFiles = (dataTransfer) => {
+                    if (!dataTransfer) return [];
+                    let files = [];
+                    for (let item of dataTransfer.items || []) {
+                        if (item.kind === 'file') {
+                            const file = item.getAsFile();
+                            if (file) files.push(file);
+                        }
+                    }
+                    if (files.length === 0 && dataTransfer.files) {
+                        files = Array.from(dataTransfer.files);
+                    }
+                    return files;
+                };
+
+                const extractImagesFromDOM = async () => {
+                    const images = Array.from(el.querySelectorAll('img'));
+                    if (images.length > 0) {
+                        for (let img of images) {
+                            const src = img.src;
+                            const parent = img.parentElement;
+                            
+                            // Fix Windows "opens in new tab" issue: remove wrapping <a> tag inserted by Emoji Picker
+                            if (parent && parent.tagName === 'A') {
+                                parent.remove();
+                            } else {
+                                img.remove();
+                            }
+                            
+                            try {
+                                // Replaced crashing atob() with native fetch, safely parses base64 and standard urls
+                                let blob;
+                                try {
+                                    const res = await fetch(src);
+                                    blob = await res.blob();
+                                } catch (fetchErr) {
+                                    if (src.startsWith('data:')) {
+                                        const splitIndex = src.indexOf(',');
+                                        const type = src.substring(0, splitIndex).split(';')[0].split(':')[1];
+                                        const byteString = atob(src.substring(splitIndex + 1));
+                                        const ab = new ArrayBuffer(byteString.length);
+                                        const ia = new Uint8Array(ab);
+                                        for (let i = 0; i < byteString.length; i++) {
+                                            ia[i] = byteString.charCodeAt(i);
+                                        }
+                                        blob = new Blob([ab], { type: type });
+                                    } else {
+                                        throw fetchErr;
+                                    }
+                                }
+                                const ext = blob.type.split('/')[1] || 'gif';
+                                let file;
+                                try { file = new File([blob], `media.${ext}`, { type: blob.type }); }
+                                catch (err) { file = blob; file.name = `media.${ext}`; }
+                                handleFiles([file]);
+                            } catch(e) { 
+                                console.error("Extract error:", e); 
+                                // Fallback for CORS blocked external Tenor URLs on desktop
+                                if (!src.startsWith('data:')) {
+                                    document.execCommand('insertText', false, src);
+                                }
+                            }
+                        }
+                        return;
+                    }
+                    
+                    // Fallback for Gboard pasting Tenor links as inline text instead of rich payload
+                    const html = el.innerHTML;
+                    const tenorMatch = html.match(/https:\/\/tenor\.com\/view\/[\w-]+/);
+                    if (tenorMatch) {
+                        const url = tenorMatch[0] + '.gif';
+                        el.innerHTML = html.replace(tenorMatch[0], ''); // Clear link immediately
+                        try {
+                            const res = await fetch(url);
+                            const blob = await res.blob();
+                            let file;
+                            try { file = new File([blob], 'fallback.gif', { type: blob.type }); }
+                            catch (err) { file = blob; file.name = 'fallback.gif'; }
+                            handleFiles([file]);
+                        } catch(err) {
+                            document.execCommand('insertText', false, tenorMatch[0]); // fallback string
+                        }
+                    }
+                };
+
+                el.addEventListener('input', extractImagesFromDOM);
+
+                el.addEventListener('paste', async (e) => {
+                    const files = extractFiles(e.clipboardData || window.clipboardData);
+                    if (files.length > 0) {
+                        e.preventDefault();
+                        handleFiles(files);
+                        return;
+                    }
+                    
+                    // Check if they pasted an HTML image (e.g. from Windows Emoji Picker or browser)
+                    const html = (e.clipboardData || window.clipboardData).getData('text/html');
+                    if (html && html.includes('<img')) {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const img = doc.querySelector('img');
+                        if (img && img.src) {
+                            e.preventDefault();
+                            try {
+                                const res = await fetch(img.src);
+                                const blob = await res.blob();
+                                let file;
+                                try { file = new File([blob], 'pasted-image.gif', { type: blob.type }); } 
+                                catch (err) { file = blob; file.name = 'pasted-image.gif'; }
+                                handleFiles([file]);
+                            } catch (err) { console.error("Failed to fetch pasted HTML image", err); }
+                            return;
+                        }
+                    }
+
+                    e.preventDefault();
+                    const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+                    if (text && !text.startsWith('content://') && !text.startsWith('data:image/')) {
+                        document.execCommand('insertText', false, text);
+                    }
+                });
+
+                el.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const files = extractFiles(e.dataTransfer);
+                    handleFiles(files);
+                });
+                
+                el.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendCallback(null); 
+                    }
+                });
+            }
+        };
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.1386.0/aws-sdk.min.js"></script>
+    <script src="js/chathandler2.js?v=5"></script>
+    <script src="js/currencymanager.js?v=2"></script>
+    <script src="js/superchat.js?v=6"></script>
+</head>
+<body>
+    <div id="lobby-screen" class="lobby-bg" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Pfont', sans-serif;">
+        <div id="lobby-mini" style="color: #cbd5e1; font-size: 1.1rem; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); animation: fadeIn 0.5s ease-out;">
+            <span id="lobby-mini-text">Connecting...</span>
+        </div>
+        <h1 id="lobby-title" style="color: #fff; font-size: 2rem; margin-bottom: 40px; text-align: center; max-width: 65%; text-overflow: clip; text-shadow: 0 4px 20px rgba(250, 4, 82, 0.4); font-weight: 700; animation: fadeIn 0.5s ease-out;">Welcome to Samsu Cast</h1>
+        <button id="lobby-action-btn" class="hidden glass-btn" onclick="CoreApp.joinRoom()" style="font-size: 1.2rem; min-width: 200px; height: 60px; border-radius: 20px; animation: fadeIn 0.5s ease-out;"></button>
+    </div>
+
+    <div id="reelection-overlay" class="overlay hidden" style="z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); animation: fadeIn 0.3s ease-out;">
+        <h2 id="reelection-title" style="color: white; margin-bottom: 15px; font-size: 2rem; text-align: center; text-shadow: 0 4px 15px rgba(250, 4, 82, 0.3);">Vote for the new host</h2>
+        <p id="reelection-subtitle" style="color: #cbd5e1; margin-bottom: 10px; text-align: center; max-width: 80%; font-size: 1.1rem;">...</p>
+        <div class="timer-progress" style="width: 80%; max-width: 350px; margin-bottom: 20px;"><div id="reelection-timer-bar" class="timer-progress-bar"></div></div>
+        <div id="reelection-candidates" style="display: flex; flex-direction: column; gap: 15px; max-height: 50vh; overflow-y: auto; width: 100%; max-width: 350px; padding: 10px;">
+        </div>
+    </div>
+
+    <div class="container">
+        <div style="width: 100%; max-width: 800px; display: flex; justify-content: flex-start; padding: 10px;">
+            <div id="user-profile-header" onclick="CoreApp.openProfileModal()" style="display: flex; align-items: center; gap: 12px; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">
+                <img id="header-avatar" src="" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);">
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                    <span style="font-size: 11px; color: #888; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">Logged in as</span>
+                    <span id="header-name" style="font-weight: bold; font-size: 16px; color: #fff;"></span>
+                </div>
+            </div>
+        </div>
+        <h1 style="margin: 10px 0 30px 0; font-size: 28px; text-align: center;">📽️ Samsu Cast</h1>
+
+        <div id="setup-screen" class="card hidden">
+            <div class="pop-header"><h2 id="role-title"></h2></div>
+            
+            <div id="global-host-info" style="margin-top: 10px; padding: 10px 15px; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between; gap: 15px;">
+                <div style="display: flex; align-items: center; gap: 10px; text-align: left; opacity: 0.8;">
+                    <div id="viewer-host-avatar"></div>
+                    <div>
+                        <div id="viewer-host-details" style="font-size: 0.85rem; color: #94a3b8;"></div>
+                    </div>
+                </div>
+                <button id="viewer-reelect-btn" class="glass-btn hidden" onclick="CoreApp.requestReElection()" style="padding: 6px 12px; font-size: 0.8rem; height: auto;">Re-elect host</button>
+            </div>
+            
+            <p id="host-instruction" class="hidden" style="margin-top: 20px;">Select the movie file to host.</p>
+            <div id="client-instruction" class="hidden" style="margin-top: 20px;">
+                <p>Waiting for host to select a file...</p>
+                
+                <div id="viewer-movie-selection" class="hidden" style="margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                    <div id="expected-file" style="color: #4ade80; font-size: 1.1rem; margin-bottom:15px; font-weight:bold; text-shadow: 0 2px 10px rgba(74,222,128,0.2);"></div>
+                    <label for="video-file" style="cursor: pointer;">
+                        <div style="padding: 12px 24px; background: linear-gradient(135deg, rgba(74, 222, 128, 0.2), rgba(34, 197, 94, 0.1)); border: 1px solid rgba(74,222,128,0.3); border-radius: 16px; display: inline-block; transition: background 0.2s; color: #4ade80; font-weight: bold; box-shadow: 0 4px 15px rgba(74,222,128,0.15);">
+                            Choose the video file
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div id="file-picker-wrapper" class="hidden" style="margin-top: 20px;">
+                <label for="video-file" style="cursor: pointer;">
+                    <div style="padding: 12px 24px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; display: inline-block; transition: background 0.2s;">
+                        Browse Video File
+                    </div>
+                </label>
+                <input type="file" id="video-file" accept="video/*,.workaround_for_force_showing_system_file_picker_android" style="display: none;">
+            </div>
+            <div id="warning-box" class="hidden">
+                <p style="margin-bottom: 15px;">⚠️ <strong>Mismatch:</strong> Duration matches, but name/size differs. Sure this is the right file?</p>
+                <button class="warning" onclick="CoreApp.ignoreWarning()">Ignore and Play</button>
+            </div>
+        </div>
+
+        <div id="home-chat-wrapper" style="position: relative; margin-top: 20px; display: flex; flex-direction: column; align-items: center;">
+            <div id="home-chat-notification" class="hidden" style="position: absolute; bottom: calc(100% + 15px); background: rgba(10,10,15,0.9); padding: 10px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); z-index: 100; display: flex; align-items: center; gap: 10px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: opacity 0.3s; color: white; white-space: nowrap;" onclick="CoreApp.openChatSidebar()">
+                <img id="notif-avatar" src="" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover;">
+                <div style="text-align: left;">
+                    <div id="notif-name" style="font-weight: bold; font-size: 13px;"></div>
+                    <div id="notif-msg" style="font-size: 12px; color: #ccc;">New message</div>
+                </div>
+            </div>
+            
+            <button id="home-chat-btn" onclick="CoreApp.openChatSidebar()" style="width: auto; height: 60px; border-radius: 10px; background: #4e4e4e; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; font-size: 26px; color: white; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.5) 0px 4px 15px; display: flex; align-items: center; justify-content: center; transition: 0.2s; transform: scale(1);">Chat 💬</button>
+        </div>
+
+        <div id="player-screen" class="hidden" style="margin-bottom: 20px; width: 100%;">
+            <div class="video-container" id="video-wrapper">
+                <video id="main-video">
+                    <track id="sub-track" kind="subtitles" srclang="en" label="English">
+                </video>
+                
+                <div id="live-chat-overlay"></div>
+                
+                <!-- Expand button to open the Chat Sidebar (Player Only) -->
+                <button id="chat-expand-btn" class="chat-expand-btn" onclick="CoreApp.openChatSidebar()" title="Open Chat Dock">&gt;</button>
+                
+                <div id="floating-area" class="floating-area"></div>
+                
+                <!-- Bouncy Money Blasts Container -->
+                <div id="money-blast-container" style="position: absolute; bottom: 85px; right: 20px; z-index: 55; display: flex; flex-direction: column; gap: 10px; pointer-events: none; align-items: flex-end;"></div>
+
+                <!-- Action Dock -->
+                <div id="action-dock" class="action-dock hidden-controls">
+                    <button class="dock-btn" onclick="ChatHandler.toggleChatPopup()" title="Chat">💬</button>
+                    <button class="dock-btn" onclick="ChatHandler.sendReaction('😂')">😂</button>
+                    <button class="dock-btn" onclick="ChatHandler.sendReaction('🤡')">🤡</button>
+                    <button class="dock-btn" onclick="ChatHandler.sendReaction('💀')">💀</button>
+                    <button class="dock-btn" onclick="ChatHandler.sendReaction('🔥')">🔥</button>
+                    <button class="dock-btn" onclick="ChatHandler.toggleEmojiPopup()" title="Custom Emoji">➕</button>
+                </div>
+                
+                <!-- Chat Popup -->
+                <div id="chat-popup" class="chat-popup hidden-controls" style="display: none;">
+                    <div id="chat-input" contenteditable="true" spellcheck="true" placeholder="Say something..." class="editable-input"></div>
+                    <button onclick="ChatHandler.sendChat()">Send</button>
+                </div>
+
+                <!-- Custom Emoji Popup with SuperChat Gift Button -->
+                <div id="emoji-popup" class="emoji-popup hidden-controls" style="display: none;">
+                    <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 5px;">
+                        <span class="emoji-btn" onclick="ChatHandler.sendReaction('🥀')">🥀</span>
+                        <span class="emoji-btn" onclick="ChatHandler.sendReaction('😋')">😋</span>
+                        <span class="emoji-btn" onclick="ChatHandler.sendReaction('😭')">😭</span>
+                        <span class="emoji-btn" onclick="ChatHandler.sendReaction('💔')">💔</span>
+                        <span class="emoji-btn" onclick="ChatHandler.sendReaction('🤮')">🤮</span>
+                        <span class="emoji-btn" onclick="ChatHandler.sendReaction('cdi')">cdi</span>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <div id="custom-emoji-input" contenteditable="true" spellcheck="true" placeholder="Type emoji..." class="editable-input"></div>
+                        <button onclick="ChatHandler.sendCustomEmoji()">Send</button>
+                        <button id="superchat-btn" class="emoji-btn hidden" onclick="SuperChat.openPopup()" style="padding: 10px; font-size: 18px; border-radius: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);" title="SuperChat">🎁</button>
+                    </div>
+                </div>
+
+                <!-- SuperChat Fullscreen Overlay -->
+                <div id="superchat-overlay" class="overlay hidden" style="z-index: 60; background: rgba(0, 0, 0, 0.146);backdrop-filter: none;">
+                    <div style="background: #000000; color: #ffffff; padding: 25px; border-radius: 16px; width: 90%; max-width: 400px; text-align: left; display: flex; flex-direction: column; gap: 15px; pointer-events: auto;">
+                        <h2 style="margin:0; color:#ffffff; text-align:center;">🎁 Donate To Samsu Cast</h2>
+                        <p style="margin:0; text-align:center; color:#666; font-size: 14px;text-shadow: none;">Your Dhon: $<span id="sc-wallet">1</span></p>
+                        <input type="number" id="sc-amount" placeholder="Donation Amount ($)" style="width:100%; max-width:100%; background: #272727; color: #ffffff; border: 1px solid #ccc;">
+                        
+                        <!-- Media Preview Container (Initially Hidden) -->
+                        <div id="sc-media-preview" style="display:none; position:relative; margin-bottom: 5px; text-align:center;">
+                            <img id="sc-preview-img" src="" style="max-width:100%; max-height:120px; border-radius:8px; object-fit:contain; border:1px solid #444;">
+                            <button onclick="SuperChat.removeMedia()" style="position:absolute; top:-10px; right:-10px; background:#e53935; border:2px solid #000; color:white; border-radius:50%; width:28px; height:28px; font-size:14px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">X</button>
+                        </div>
+
+                        <div id="sc-message" contenteditable="true" spellcheck="true" placeholder="Special Message or Paste GIF..." class="editable-input" style="width:100%; max-width:100%; background: #2f2f2f; color: #ffffff; border: 1px solid #ccc; min-height:45px; margin: 0;"></div>
+                        <div style="display:flex; gap: 10px; margin-top: 10px;">
+                            <button onclick="SuperChat.closePopup()" style="flex:1; background: #eee; color: #333; border: 1px solid #ccc; font-weight: bold;">Cancel</button>
+                            <button onclick="SuperChat.pay()" style="flex:1; background: #e53935; color: #fff; border: 1px solid #c62828; font-weight: bold;">Pay</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Insufficient Funds Error Overlay -->
+                <div id="insufficient-funds-overlay" class="overlay hidden" style="z-index: 70; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);">
+                    <div style="background: #1a1a1a; padding: 25px; border-radius: 16px; border: 1px solid rgba(250, 60, 60, 0.4); text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); pointer-events: auto;">
+                        <p style="color: #ff9999; font-size: 20px; margin-bottom: 20px;">Tomar Oto Dhon Nai</p>
+                        <button onclick="document.getElementById('insufficient-funds-overlay').classList.add('hidden')" style="width: 100%; background: rgba(255,255,255,0.1);">OK</button>
+                    </div>
+                </div>
+
+                <div class="touch-zone-container">
+                    <div id="touch-left" class="touch-zone">
+                        <div class="seek-ripple" id="ripple-left">
+                            <svg viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
+                            <span id="seek-val-left">-10s</span>
+                        </div>
+                    </div>
+<div id="touch-right" class="touch-zone">
+                        <div class="seek-ripple" id="ripple-right">
+                            <svg viewBox="0 0 24 24"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
+                            <span id="seek-val-right">+10s</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="seek-approval-overlay" class="overlay hidden">
+                    <p id="seek-msg"></p>
+                    <p id="seek-votes" style="font-size: 16px; color: #aaa;">Votes: 0 / 1</p>
+                    <div class="overlay-buttons">
+                        <button id="vote-approve-btn" onclick="CoreApp.voteSeek(true)">Approve</button>
+                        <button id="vote-reject-btn" class="warning" onclick="CoreApp.voteSeek(false)">Shut up</button>
+                    </div>
+                    <div style="margin-top: 15px; font-size: 14px;">
+                        <input type="checkbox" id="auto-vote-yes" style="vertical-align: middle;">
+                        <label for="auto-vote-yes" style="vertical-align: middle; color: #ccc;">Auto vote Yes for me from now on</label>
+                    </div>
+                    <div class="vote-timer-container"><div id="vote-timer-bar" class="vote-timer-bar"></div></div>
+                </div>
+
+                <div id="pause-overlay" style="z-index: 21;" class="overlay hidden">
+                    <p id="pause-msg"></p>
+                    <p id="pause-votes" style="font-size: 16px; color: #aaa;">Votes: 0 / 1</p>
+                    <div class="overlay-buttons">
+                        <button id="vote-resume-btn" onclick="CoreApp.voteResume(true)">Resume</button>
+                        <button id="vote-wait-btn" class="warning" onclick="CoreApp.voteResume(false)">Wait</button>
+                    </div>
+                </div>
+                
+                <div id="desync-overlay" class="overlay hidden">
+                    <p>⚠️ Everyone is ahead of you!</p>
+                    <div class="overlay-buttons">
+                        <button onclick="CoreApp.syncWithHost()">Sync with Them</button>
+                        <button class="warning" onclick="CoreApp.requestReplay()">Request replay</button>
+                    </div>
+                </div>
+
+                <div id="sub-overlay" class="overlay hidden">
+                    <p id="sub-msg">Downloading subtitles...</p>
+                </div>
+
+                <div id="ready-overlay" class="overlay hidden">
+                    <p id="ready-msg">Waiting for everyone to buffer...</p>
+                    <button id="ready-btn" class="big-red-btn hidden" onclick="CoreApp.triggerExecutePlay()"><img src="assets/play.png" style="height: 80px;width: 80px;display: inline-block;"></button>
+                </div>
+
+                <div class="custom-controls" id="custom-controls">
+                    <button id="play-pause-btn" class="control-btn"><img src="assets/play.png" style="height: 40px;width: 40px;display: inline-block;"></button>
+                    <span id="time-display">0:00 / 0:00</span>
+                    <div class="progress-bar" id="progress-bar">
+                        <div class="progress-filled" id="progress-filled"></div>
+                    </div>
+                    
+                    <input type="file" id="sub-file" accept=".vtt,.srt" style="display:none;">
+                    <button id="cc-upload-btn" class="control-btn cc-btn hidden" title="Upload Subtitles">⬆️ CC</button>
+                    <button id="cc-btn" class="control-btn cc-btn hidden" title="Toggle Subtitles">CC</button>
+                    
+                    <button id="fullscreen-btn" class="control-btn">⛶</button>
+                </div>
+            </div>
+            <h4 id="now-playing" style="text-align: center; color: #888; margin-top: 15px; font-weight: normal;"></h4>
+        </div>
+
+        <div id="modules-layout" style="margin-top: 20px;">
+            <div id="chat-module" class="module-container">
+                <div class="pop-header"><h2 style="font-size: 1.1rem;">System Logs & Chat</h2></div>
+                <div id="sys-chatbox"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chat History Sidebar (Fixed across entire app) -->
+    <div id="chat-sidebar" class="chat-sidebar">
+        <div class="chat-sidebar-header" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <span style="font-weight: bold; font-size: 14px; color: #fff;">Movie Night Chat</span>
+            <button class="chat-close-btn" onclick="CoreApp.closeChatSidebar()" style="background: transparent; border: none; color: #aaa; font-size: 18px; font-weight: bold; cursor: pointer;">&times;</button>
+        </div>
+        <div class="sidebar-messages" id="chat-sidebar-messages"></div>
+        <div class="sidebar-input-area" style="padding: 10px; border-top: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.3);">
+            <div id="sidebar-chat-input" class="editable-div" contenteditable="true" placeholder="Type message..." style="width: 100%; min-height: 40px; max-height: 100px; overflow-y: auto; background: #2f2f2f; border-radius: 8px; padding: 8px; color: white; border: 1px solid #444; outline: none; margin-bottom: 8px;"></div>
+            <div class="input-actions" style="display: flex; gap: 8px;">
+                <button onclick="ChatHandler.sendSidebarChat()" style="flex: 1; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: bold; cursor: pointer;">Send</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Profile Edit Modal -->
+    <div id="profile-modal" class="overlay hidden" style="z-index: 100; background: rgba(0,0,0,0.7); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);">
+        <div style="background: rgba(20, 20, 28, 0.8); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); padding: 35px; border-radius: 24px; width: 90%; max-width: 420px; text-align: center; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 15px 50px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.1); pointer-events: auto; animation: slideInBounce 0.5s var(--bounce);">
+            <h2 style="margin-top: 0; color: white; text-shadow: 0 2px 10px rgba(250,4,82,0.3);">Edit Profile</h2>
+            <img id="edit-avatar-preview" src="" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 2px solid var(--primary);">
+            <div style="margin-bottom: 20px;">
+                <label for="edit-icon-file" style="cursor: pointer; background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 12px; font-size: 13px;">Change Icon</label>
+                <input type="file" id="edit-icon-file" accept="image/*" style="display: none;" onchange="CoreApp.handleEditIconSelect(event)">
+            </div>
+            <input type="text" id="edit-fullname" placeholder="Full Name" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; margin-bottom: 15px; box-sizing: border-box;">
+            
+            <div id="edit-password-btn-container" style="margin-bottom: 25px;">
+                <button onclick="CoreApp.showPasswordChange()" style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">Change Password</button>
+            </div>
+            
+            <div id="edit-password-inputs" class="hidden">
+                <input type="password" id="edit-password" placeholder="New Password" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; margin-bottom: 15px; box-sizing: border-box;">
+                <input type="password" id="edit-password-confirm" placeholder="Confirm New Password" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; margin-bottom: 25px; box-sizing: border-box;">
+            </div>
+            
+            <div style="display: flex; gap: 15px; margin-top: 15px;">
+                <button onclick="CoreApp.closeProfileModal()" style="flex: 1; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2);">Cancel</button>
+                <button class="glass-btn" onclick="CoreApp.saveProfileModal()" style="flex: 1; padding: 12px;">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js?v=12"></script>        
+    <script src="js/cordovafixes.js?v=4"></script>
+</body>
+</html>

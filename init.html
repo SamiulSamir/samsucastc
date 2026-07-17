@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Samsu Cast - Connect</title>
+    <style>
+        @font-face {font-family: 'Pfont';src: url('assets/fonts/pfont.ttf') format('truetype');}
+        :root {
+            --bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        body { 
+            font-family: 'Pfont', system-ui, -apple-system, sans-serif; 
+            background: #0f0f0f url('assets/bg.jpg') no-repeat center center fixed; 
+            background-size: cover;
+            color: #e5e5e5; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .card { 
+            background: rgba(20, 20, 28, 0.65);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            padding: 40px; 
+            border-radius: 24px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1); 
+            text-align: center; 
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-sizing: border-box;
+            animation: slideUp 0.6s var(--bounce);
+        }
+        input { 
+            background: rgba(45, 45, 45, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #fff;
+            padding: 14px 16px;
+            border-radius: 16px;
+            backdrop-filter: blur(25px);
+            font-family: 'Pfont', sans-serif;
+            font-size: 1rem;
+            width: 100%; 
+            outline: none;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+        input:focus { 
+            background: rgba(55, 55, 55, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+        }
+        button { 
+            font-family: 'Pfont', sans-serif;
+            width: 100%;
+            padding: 14px; 
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px; 
+            color: #f2f2f2;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer; 
+            transition: all 0.3s var(--bounce); 
+        }
+        button:hover { 
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.02) translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        h1 { margin-top: 0; margin-bottom: 10px; font-weight: 600; }
+        p { color: #cbd5e1; margin-bottom: 25px; }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Server Setup</h1>
+        <p>Enter the Samsu Cast server address to connect.</p>
+        <input type="text" id="server-url" placeholder="https://sss--samsucast-server--ylvxgg2sphx7.code.run/">
+        <button onclick="saveUrl()">Connect</button>
+    </div>
+
+    <script>
+        const existingUrl = localStorage.getItem('samsuServerUrl');
+        if (existingUrl) {
+            document.getElementById('server-url').value = existingUrl;
+        } else {
+            const host = window.location.hostname;
+            if (host && host !== '') {
+                document.getElementById('server-url').value = 'https://sss--samsucast-server--ylvxgg2sphx7.code.run/';
+            } else {
+                document.getElementById('server-url').value = 'https://sss--samsucast-server--ylvxgg2sphx7.code.run/';
+            }
+        }
+
+        function saveUrl() {
+            let url = document.getElementById('server-url').value.trim();
+            if(!url) return;
+            if(url.endsWith('/')) url = url.slice(0, -1);
+            if(!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'http://' + url;
+            }
+            
+            localStorage.setItem('samsuServerUrl', url);
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
