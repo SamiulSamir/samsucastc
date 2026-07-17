@@ -136,16 +136,23 @@
             justify-content: center;
             z-index: 10;
         }
-        .spinner {
+        .spinner-svg {
+            animation: rotate 2s linear infinite;
             width: 40px;
             height: 40px;
-            border: 4px solid rgba(255,255,255,0.1);
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
             margin-top: 20px;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .spinner-svg .path {
+            stroke: #fff;
+            stroke-linecap: round;
+            animation: dash 1.5s ease-in-out infinite;
+        }
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+        @keyframes dash {
+            0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; }
+            50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; }
+            100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
+        }
         
         #error-msg {
             color: #ff5555;
@@ -209,8 +216,11 @@
         <!-- FAKE SPINNER OVERLAY -->
         <div id="spinner-overlay" class="hidden">
             <img id="spinner-avatar" src="" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.2);">
+            <div id="spinner-initials" class="hidden" style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; color: white;"></div>
             <h2 id="spinner-name" style="margin-top: 15px; color: #fff;">Logging in...</h2>
-            <div class="spinner"></div>
+            <svg class="spinner-svg" viewBox="0 0 50 50">
+                <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+            </svg>
         </div>
 
         <div style="margin-top: 25px; text-align: center;">
@@ -422,10 +432,18 @@
             document.getElementById('error-msg').classList.add('hidden');
             
             const spinnerAvatar = document.getElementById('spinner-avatar');
+            const spinnerInitials = document.getElementById('spinner-initials');
             if (userData.profileIcon && userData.profileIcon.startsWith('r2://')) {
-                spinnerAvatar.style.display = 'none'; // Cannot easily resolve R2 URLs here without AWS SDK, so hide it
+                spinnerAvatar.classList.add('hidden');
+                spinnerInitials.classList.remove('hidden');
+                spinnerInitials.innerText = userData.username ? userData.username.charAt(0).toUpperCase() : '?';
+                const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#00bcd4', '#009688', '#4caf50', '#ff9800', '#ff5722'];
+                const charCode = (userData.username || 'A').charCodeAt(0);
+                spinnerInitials.style.backgroundColor = colors[charCode % colors.length];
             } else if (userData.profileIcon) {
                 spinnerAvatar.src = `${API_URL}${userData.profileIcon}`;
+                spinnerAvatar.classList.remove('hidden');
+                spinnerInitials.classList.add('hidden');
             }
             document.getElementById('spinner-name').innerText = `Welcome, ${userData.fullname}`;
             document.getElementById('spinner-overlay').classList.remove('hidden');

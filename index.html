@@ -780,7 +780,7 @@
                 <div id="viewer-movie-selection" class="hidden" style="margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
                     <div id="expected-file" style="color: #4ade80; font-size: 1.1rem; margin-bottom:15px; font-weight:bold; text-shadow: 0 2px 10px rgba(74,222,128,0.2);"></div>
                     <label for="video-file" style="cursor: pointer;">
-                        <div style="padding: 12px 24px; background: linear-gradient(135deg, rgba(74, 222, 128, 0.2), rgba(34, 197, 94, 0.1)); border: 1px solid rgba(74,222,128,0.3); border-radius: 16px; display: inline-block; transition: background 0.2s; color: #4ade80; font-weight: bold; box-shadow: 0 4px 15px rgba(74,222,128,0.15);">
+                        <div style="padding: 12px 24px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); border-radius: 16px; display: inline-block; transition: background 0.2s; color: white; font-weight: bold; box-shadow: 0 4px 15px rgba(255,255,255,0.1);">
                             Choose the video file
                         </div>
                     </label>
@@ -964,9 +964,14 @@
         </div>
 
         <div id="modules-layout" style="margin-top: 20px;">
-            <div id="chat-module" class="module-container">
+            <div id="chat-module" class="module-container" style="display: none;">
                 <div class="pop-header"><h2 style="font-size: 1.1rem;">System Logs & Chat</h2></div>
                 <div id="sys-chatbox"></div>
+            </div>
+
+            <div id="dynamic-post-section" class="module-container" style="text-align: center; padding: 20px;">
+                <img id="post-img" src="" style="width: 90%; height: auto; border-radius: 12px; display: none; margin: 0 auto 15px auto;">
+                <div id="post-status" style="font-size: 15px; color: #fff; text-align: left;"></div>
             </div>
         </div>
     </div>
@@ -986,7 +991,30 @@
         </div>
     </div>
     
-    <!-- Profile Edit Modal -->
+    <!-- Load Dynamic Post -->
+    <script>
+        async function loadDynamicPost() {
+            try {
+                const res = await fetch(`https://samiulsamir.github.io/samsucastc/post.json?t=${Date.now()}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.img) {
+                        const imgEl = document.getElementById('post-img');
+                        imgEl.src = data.img;
+                        imgEl.style.display = 'block';
+                    }
+                    if (data.status) {
+                        document.getElementById('post-status').innerHTML = data.status;
+                    }
+                }
+            } catch(e) {
+                console.error("Failed to load post.json", e);
+            }
+        }
+        window.addEventListener('DOMContentLoaded', loadDynamicPost);
+    </script>
+
+    <!-- Global Error Handler -->
     <div id="profile-modal" class="overlay hidden" style="z-index: 100; background: rgba(0,0,0,0.7); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);">
         <div style="background: rgba(20, 20, 28, 0.8); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); padding: 35px; border-radius: 24px; width: 90%; max-width: 420px; text-align: center; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 15px 50px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.1); pointer-events: auto; animation: slideInBounce 0.5s var(--bounce);">
             <h2 style="margin-top: 0; color: white; text-shadow: 0 2px 10px rgba(250,4,82,0.3);">Edit Profile</h2>
