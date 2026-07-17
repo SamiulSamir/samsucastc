@@ -155,7 +155,7 @@
             margin-bottom: 15px;
         }
     </style>
-</head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.1386.0/aws-sdk.min.js"></script></head>
 <body>
 
     <div class="card">
@@ -280,38 +280,89 @@
             }
         }
 
-        async function register() {
-            const user = document.getElementById('reg-username').value.trim();
-            const fname = document.getElementById('reg-fullname').value.trim();
-            const pass = document.getElementById('reg-password').value;
-            const confirmPass = document.getElementById('reg-confirm-password').value;
-            const key = document.getElementById('reg-key').value.trim();
+          async function fetchR2Creds() {
+              const res = await fetch(`${API_URL}/api/r2-creds`);
+              const creds = await res.json();
+              AWS.config.update({
+                  accessKeyId: creds.accessKeyId,
+                  secretAccessKey: creds.secretAccessKey,
+                  endpoint: new AWS.Endpoint(creds.endpoint),
+                  s3ForcePathStyle: true,
+                  signatureVersion: 'v4'
+              });
+              window.s3 = new AWS.S3();
+              window.R2Bucket = creds.bucketName;
+          }
 
-            if(!user || !fname || !pass || !confirmPass || !key) return showError('Please fill all fields');
-            if(pass !== confirmPass) return showError('Passwords do not match');
+          async function uploadAvatarToR2(base64Str, username) {
+              if (!window.s3) await fetchR2Creds();
+              const base64Data = base64Str.replace(/^data:image\/\w+;base64,/, "");
+              const byteCharacters = atob(base64Data);
+              const byteNumbers = new Array(byteCharacters.length);
+              for (let i = 0; i < byteCharacters.length; i++) {
+                  byteNumbers[i] = byteCharacters.charCodeAt(i);
+              }
+              const byteArray = new Uint8Array(byteNumbers);
+              const file = new Blob([byteArray], { type: 'image/png' });
+              
+              const uniqueName = 'avatars/' + username.replace(/[^a-z0-9_-]/gi, '_').toLowerCase() + '-' + Date.now() + '.png';
+              const params = {
+                  Bucket: window.R2Bucket,
+                  Key: uniqueName,
+                  Body: file,
+                  ContentType: 'image/png'
+              };
+              await window.s3.putObject(params).promise();
+              return 'r2://' + uniqueName;
+          }
 
-            try {
-                const res = await fetch(`${API_URL}/api/register`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ 
-                        username: user, 
-                        fullname: fname, 
-                        password: pass, 
-                        approvalKey: key, 
-                        icon: selectedIcon 
-                    })
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    showSpinnerAndRedirect(data.user);
-                } else {
-                    showError(data.error);
-                }
-            } catch(e) {
-                showError('Could not connect to server');
-            }
-        }
+          async function register() {
+              const user = document.getElementById('reg-username').value.trim();
+              const fname = document.getElementById('reg-fullname').value.trim();
+              const pass = document.getElementById('reg-password').value;
+              const confirmPass = document.getElementById('reg-confirm-password').value;
+              const key = document.getElementById('reg-key').value.trim();
+  
+              if(!user || !fname || !pass || !confirmPass || !key) return showError('Please fill all fields');
+              if(pass !== confirmPass) return showError('Passwords do not match');
+  
+              try {
+                  const errEl = document.getElementById('error-msg');
+                  errEl.innerText = "Registering...";
+                  errEl.style.color = "cyan";
+                  errEl.classList.remove('hidden');
+
+                  let finalIconUrl = null;
+                  if (selectedIcon) {
+                      errEl.innerText = "Uploading avatar to R2...";
+                      finalIconUrl = await uploadAvatarToR2(selectedIcon, user);
+                      errEl.innerText = "Registering user...";
+                  }
+
+                  const res = await fetch(`${API_URL}/api/register`, {
+                      method: 'POST',
+                      headers: {'Content-Type': 'application/json'},
+                      body: JSON.stringify({ 
+                          username: user, 
+                          fullname: fname, 
+                          password: pass, 
+                          approvalKey: key, 
+                          icon: finalIconUrl 
+                      })
+                  });
+                  const data = await res.json();
+                  if (res.ok) {
+                      showSpinnerAndRedirect(data.user);
+                  } else {
+                      errEl.style.color = "#ff4444";
+                      showError(data.error);
+                  }
+              } catch(e) {
+                  const errEl = document.getElementById('error-msg');
+                  errEl.style.color = "#ff4444";
+                  showError('Could not connect to server');
+              }
+          }
 
         async function requestResetKey() {
             const user = document.getElementById('forgot-username').value.trim();
