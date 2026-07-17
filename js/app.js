@@ -44,7 +44,37 @@
                 return 'r2://' + uniqueName;
             };
 
+            const r2BlobCache = {};
+            window.getR2BlobUrlAsync = async (key) => {
+                if(!window.r2Ready || !key.startsWith('r2://')) return key;
+                const actualKey = key.replace('r2://', '');
+                if (r2BlobCache[actualKey]) return r2BlobCache[actualKey];
+                
+                try {
+                    // Fetch using headers (bypasses WAF dropping massive query strings)
+                    const data = await window.s3.getObject({ Bucket: window.R2Bucket, Key: actualKey }).promise();
+                    const blob = new Blob([data.Body], { type: data.ContentType || 'image/gif' });
+                    const url = URL.createObjectURL(blob);
+                    r2BlobCache[actualKey] = url;
+                    return url;
+                } catch (e) {
+                    console.error("Failed to load R2 Blob", e);
+                    // Fallback to presigned URL if getting object directly fails for some reason
+                    return window.s3.getSignedUrl('getObject', { Bucket: window.R2Bucket, Key: actualKey, Expires: 60 * 60 });
+                }
+            };
+
+            window.resolveR2Image = (img) => {
+                const key = img.getAttribute('data-r2');
+                if (!key || img.dataset.resolved) return;
+                img.dataset.resolved = "true";
+                window.getR2BlobUrlAsync(key).then(url => {
+                    img.src = url;
+                });
+            };
+            
             window.getR2Url = (key) => {
+                // Legacy fallback for things that can't use the async loader easily
                 if(!window.r2Ready || !key.startsWith('r2://')) return key;
                 const actualKey = key.replace('r2://', '');
                 return window.s3.getSignedUrl('getObject', { Bucket: window.R2Bucket, Key: actualKey, Expires: 60 * 60 });
@@ -147,7 +177,11 @@
                 if (iconUrl) {
                     let finalUrl = iconUrl;
                     if (iconUrl.startsWith('r2://')) {
-                        finalUrl = window.getR2Url(iconUrl);
+                        // For user icons, we can just await the blob URL since it's only set once on login
+                        window.getR2BlobUrlAsync(iconUrl).then(url => {
+                            document.getElementById('user-icon-display').src = url;
+                            document.getElementById('profile-icon').src = url;
+                        });
                     } else if (iconUrl.startsWith('/')) {
                         finalUrl = SERVER_URL + iconUrl;
                     }
