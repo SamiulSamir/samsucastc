@@ -9,47 +9,6 @@
             const userData = JSON.parse(userStr);
             const SERVER_URL = localStorage.getItem('samsuServerUrl');
             const socket = io(SERVER_URL, { transports: ['websocket'] });
-            
-            window.r2Ready = false;
-            fetch(SERVER_URL + '/api/r2-creds')
-                .then(res => res.json())
-                .then(creds => {
-                    window.R2Bucket = creds.bucketName;
-                    AWS.config.update({
-                        accessKeyId: creds.accessKeyId,
-                        secretAccessKey: creds.secretAccessKey,
-                        region: 'auto',
-                        signatureVersion: 'v4'
-                    });
-                    window.s3 = new AWS.S3({ 
-                        endpoint: creds.endpoint,
-                        s3ForcePathStyle: true
-                    });
-                    window.r2Ready = true;
-                }).catch(err => console.error("Failed to load R2 credentials", err));
-
-            window.uploadToR2 = async (file, fileName) => {
-                if(!window.r2Ready) throw new Error("R2 not ready");
-                const ext = fileName.split('.').pop();
-                const uniqueName = Date.now() + '-' + Math.random().toString(36).substring(2, 9) + '.' + ext;
-                
-                const params = {
-                    Bucket: window.R2Bucket,
-                    Key: uniqueName,
-                    Body: file,
-                    ContentType: file.type || 'image/png'
-                };
-                
-                await window.s3.putObject(params).promise();
-                return 'r2://' + uniqueName;
-            };
-
-            window.getR2Url = (key) => {
-                if(!window.r2Ready || !key.startsWith('r2://')) return key;
-                const actualKey = key.replace('r2://', '');
-                return window.s3.getSignedUrl('getObject', { Bucket: window.R2Bucket, Key: actualKey, Expires: 60 * 60 });
-            };
-
             const ui = {
                 setup: document.getElementById('setup-screen'),
                 player: document.getElementById('player-screen'),
@@ -146,9 +105,7 @@
             const getAvatarHTML = (iconUrl, name, size = 40) => {
                 if (iconUrl) {
                     let finalUrl = iconUrl;
-                    if (iconUrl.startsWith('r2://')) {
-                        finalUrl = window.getR2Url(iconUrl);
-                    } else if (iconUrl.startsWith('/')) {
+                    if (iconUrl.startsWith('/')) {
                         finalUrl = SERVER_URL + iconUrl;
                     }
                     return `<img src="${finalUrl}" style="width: ${size}px; height: ${size}px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); flex-shrink: 0;">`;
