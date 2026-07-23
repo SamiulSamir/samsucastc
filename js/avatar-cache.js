@@ -113,6 +113,12 @@ window.AvatarCache = (() => {
                 await saveToDB(username, r2Key, blob);
 
                 console.log(`AvatarCache: Cached avatar for ${username}`);
+                
+                // LIVE UI UPDATE: Broadcast that this avatar is ready so the UI hot-swaps it instantly!
+                window.dispatchEvent(new CustomEvent('avatar-updated', {
+                    detail: { username, url: blobUrl }
+                }));
+
             } catch (e) {
                 console.error(`AvatarCache: Failed to cache avatar for ${username}`, e);
             } finally {
