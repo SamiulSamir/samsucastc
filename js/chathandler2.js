@@ -259,6 +259,12 @@ window.ChatHandler = (() => {
         }
 
         ui.sidebarMessages.appendChild(el);
+        
+        // FIX: Manually trigger R2 resolution since inline Data URI onload events are bypassed by innerHTML
+        if (window.resolveR2Image) {
+            el.querySelectorAll('img[data-r2]:not([data-resolved])').forEach(img => window.resolveR2Image(img));
+        }
+
         ui.sidebarMessages.scrollTop = ui.sidebarMessages.scrollHeight;
         
         if (!isHistoryLoad && !isDockOpen) {
@@ -275,6 +281,8 @@ window.ChatHandler = (() => {
                         notifAvatar.setAttribute("data-r2", msg.icon);
                         notifAvatar.onload = function() { window.resolveR2Image(this); };
                         notifAvatar.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+                        // FIX: Manual trigger for the notification popup
+                        if (window.resolveR2Image) window.resolveR2Image(notifAvatar);
                     } else if (msg.icon && msg.icon.startsWith('/')) {
                         notifAvatar.src = localStorage.getItem('samsuServerUrl') + msg.icon;
                     } else if (msg.icon) {
@@ -386,6 +394,12 @@ window.ChatHandler = (() => {
                     
                     if (el.innerHTML) {
                         ui.sidebarMessages.insertBefore(el, ui.sidebarMessages.firstChild);
+                        
+                        // FIX: Manual trigger for historical messages
+                        if (window.resolveR2Image) {
+                            el.querySelectorAll('img[data-r2]:not([data-resolved])').forEach(img => window.resolveR2Image(img));
+                        }
+                        
                         chatHistory.unshift(msg);
                     }
                 }
@@ -395,7 +409,6 @@ window.ChatHandler = (() => {
                 isFetchingHistory = false;
             });
 
-            // Attach unified media pasting engine
             if (window.MediaHelper) {
                 window.MediaHelper.attach('chat-input', (file) => {
                     if (file) {
@@ -561,6 +574,11 @@ window.ChatHandler = (() => {
             
             el.style.transformOrigin = 'top left'; 
             ui.floatingArea.appendChild(el);
+            
+            // FIX: Manual trigger for floating bubble messages
+            if (window.resolveR2Image) {
+                el.querySelectorAll('img[data-r2]:not([data-resolved])').forEach(img => window.resolveR2Image(img));
+            }
             
             const containerW = ui.floatingArea.clientWidth || 300;
             const maxSpawnW = Math.max(10, containerW * 0.35 - 100); 
