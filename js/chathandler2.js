@@ -9,6 +9,35 @@ window.ChatHandler = (() => {
     let lastPhysicsTime = 0;
     let isDockOpen = false;
 
+    // Listens for 'avatar-updated' event from avatar-cache.js and instantly replaces images
+    window.addEventListener('avatar-updated', (e) => {
+        const { username, url } = e.detail;
+        if (!username || !url) return;
+        
+        const safeUserName = username.replace(/"/g, '\\"');
+        const query = `img[data-avatar-user="${safeUserName}"]`;
+        const imgs = document.querySelectorAll(query);
+        
+        imgs.forEach(img => {
+            img.src = url;
+            img.removeAttribute('data-r2'); // Clean up R2 triggers to stop loops
+            img.dataset.resolved = "true";
+            img.style.display = 'block';
+            
+            // Hide the colored-letter fallback element behind it
+            if (img.nextElementSibling && img.nextElementSibling.classList.contains('fallback-avatar')) {
+                img.nextElementSibling.style.display = 'none';
+            }
+        });
+        
+        // Live update the Home chat notification popup if active
+        const notifName = document.getElementById('notif-name');
+        if (notifName && notifName.innerText === username) {
+            const notifAvatar = document.getElementById('notif-avatar');
+            if (notifAvatar) notifAvatar.src = url;
+        }
+    });
+
     function getAvatarMarkup(userName, customClass = "sidebar-avatar", msgIcon = null) {
         if(!userName) return '';
         const firstLetter = userName.charAt(0).toUpperCase();
@@ -21,28 +50,34 @@ window.ChatHandler = (() => {
         const size = customClass === 'float-avatar' ? '28px' : '32px';
         const fontSize = customClass === 'float-avatar' ? '12px' : '14px';
 
-        let imgHtml = '';
-        
-        // 1. Try AvatarCache first (instant blob URL from IndexedDB)
+        const safeUserName = userName.replace(/"/g, '&quot;');
         const cachedUrl = window.AvatarCache ? window.AvatarCache.getAvatarUrl(userName) : null;
+        
+        let imgSrc = '';
+        let r2Markup = '';
+        
+        // 1. Try AvatarCache first
         if (cachedUrl) {
-            imgHtml = `<img src="${cachedUrl}" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`;
-        }
-        // 2. Fall back to msgIcon (for unregistered users or cache not ready yet)
+            imgSrc = cachedUrl;
+        } 
+        // 2. Fall back to raw msgIcon string processing
         else if (msgIcon) {
             if (msgIcon.startsWith('r2://')) {
-                imgHtml = `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" data-r2="${msgIcon}" onload="window.resolveR2Image(this)" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`;
+                imgSrc = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+                r2Markup = `data-r2="${msgIcon}" onload="window.resolveR2Image(this)"`;
             } else {
-                let actualSrc = msgIcon.startsWith('/') ? localStorage.getItem('samsuServerUrl') + msgIcon : msgIcon;
-                imgHtml = `<img src="${actualSrc}" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`;
+                imgSrc = msgIcon.startsWith('/') ? localStorage.getItem('samsuServerUrl') + msgIcon : msgIcon;
             }
         }
-
-        const showFallback = imgHtml ? 'none' : 'flex';
+        
+        const showImg = imgSrc ? 'block' : 'none';
+        const showFallback = imgSrc ? 'none' : 'flex';
+        
+        // We ALWAYS render an <img> tag with data-avatar-user so it can be targeted by hot-swap
         return `
             <div class="${customClass}-wrapper" style="position:relative; display:inline-block; width:${size}; height:${size}; flex-shrink:0; border-radius:50%; overflow:hidden; vertical-align:middle;">
-                ${imgHtml}
-                <div style="display:${showFallback}; width:100%; height:100%; background:${color}; color:white; align-items:center; justify-content:center; font-weight:bold; font-size:${fontSize}; line-height:1; font-family:sans-serif;">${firstLetter}</div>
+                <img src="${imgSrc}" ${r2Markup} data-avatar-user="${safeUserName}" style="width:100%; height:100%; object-fit:cover; display:${showImg};" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="fallback-avatar" style="display:${showFallback}; width:100%; height:100%; background:${color}; color:white; align-items:center; justify-content:center; font-weight:bold; font-size:${fontSize}; line-height:1; font-family:sans-serif;">${firstLetter}</div>
             </div>
         `;
     }
